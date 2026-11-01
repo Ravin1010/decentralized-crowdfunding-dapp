@@ -22,5 +22,10 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Capture generated lockfile for foundation reproducibility
+        run: |
+          echo "BEGIN_GENERATED_PACKAGE_LOCK"
+          cat package-lock.json
+          echo "END_GENERATED_PACKAGE_LOCK"
       - name: Typecheck and build
         run: npm run build
