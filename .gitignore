@@ -1,0 +1,27 @@
+# JavaScript / Vite
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.local
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+contracts/.forge-snapshots/
+contracts/lcov.info
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
