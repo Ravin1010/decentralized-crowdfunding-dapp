@@ -38,7 +38,12 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - Never commit secrets, private keys, seed phrases, RPC credentials, or `.env` files.
 - Verify builds/tests whenever dependencies and tools are available; if unable, state so rather than claiming success.
 
-## Iteration 2 boundary (this PR)
+## Git identity (permanent)
 
-Allowed: responsive static frontend screens, clearly labeled fictional campaign fixtures, local presentational form interactions, visual wallet examples, and browser screenshots. Preserve the Iteration 1 foundation.
-Not allowed: Solidity contract implementation, wallet connection, Web3 reads/writes, fictional campaigns presented as real data, backend/database, deployment, changing `main`, or starting Iteration 3.
+- All new commits must use author and committer `Ravin1010 <75482385+Ravin1010@users.noreply.github.com>`; configure repository-local identity and verify `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT` before committing. Remove any identity environment overrides.
+- Never use a personal name/email, add co-author trailers (including AI tools), rewrite existing history, force-push, or modify `main`. Verify every new commit's author, committer, and message before opening the PR.
+
+## Iteration 3 boundary (this PR)
+
+Allowed: one crowdfunding Solidity contract, Foundry tests and pinned dependencies/configuration, relevant contract documentation, and minimal repository instructions.
+Not allowed: frontend changes, wallet/Web3 integration, backend/database, deployment, changing `main`, merging/auto-merging the PR, or starting Iteration 4. Preserve the accepted Iteration 2 frontend exactly.
