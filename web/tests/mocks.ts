@@ -154,15 +154,45 @@ export async function mockRpc(
 }
 export async function mockWallet(
   page: Page,
-  { chain = "0xaa36a7", reject = false, rejectSwitch = false, delay = 0 } = {},
+  {
+    chain = "0xaa36a7",
+    reject = false,
+    rejectSwitch = false,
+    delay = 0,
+    revokeUnsupported = false,
+  } = {},
 ) {
   await page.addInitScript(
-    ({ chain, reject, rejectSwitch, delay, accountA, accountB }) => {
+    ({
+      chain,
+      reject,
+      rejectSwitch,
+      delay,
+      revokeUnsupported,
+      accountA,
+      accountB,
+    }) => {
       const listeners = new Map<string, Set<(arg: unknown) => void>>();
-      let current = accountA;
-      let authorized = false;
-      let network = chain;
-      const calls: string[] = [];
+      // Test-only extension state, not app state or financial data. MetaMask
+      // retains site authorization, selected account and network across reloads.
+      const key = "test:metamask-extension";
+      const stored = JSON.parse(sessionStorage.getItem(key) || "null");
+      let current = stored?.current ?? accountA;
+      let authorized = stored?.authorized ?? false;
+      let network = stored?.network ?? chain;
+      let silentUnavailable = stored?.silentUnavailable ?? false;
+      const calls: string[] = stored?.calls ?? [];
+      const persist = () =>
+        sessionStorage.setItem(
+          key,
+          JSON.stringify({
+            current,
+            authorized,
+            network,
+            silentUnavailable,
+            calls,
+          }),
+        );
       const emit = (event: string, value: unknown) =>
         listeners.get(event)?.forEach((callback) => callback(value));
       const provider = {
@@ -184,7 +214,14 @@ export async function mockWallet(
           params?: [{ chainId: string }];
         }) {
           calls.push(method);
-          if (method === "eth_accounts") return authorized ? [current] : [];
+          persist();
+          if (method === "eth_accounts") {
+            if (silentUnavailable)
+              throw Object.assign(new Error("Wallet unavailable"), {
+                code: 4900,
+              });
+            return authorized ? [current] : [];
+          }
           if (method === "eth_chainId") return network;
           if (
             method === "wallet_requestPermissions" ||
@@ -197,6 +234,7 @@ export async function mockWallet(
                 code: 4001,
               });
             authorized = true;
+            persist();
             return method === "eth_requestAccounts"
               ? [current]
               : [
@@ -211,7 +249,12 @@ export async function mockWallet(
           if (method === "wallet_getPermissions")
             return authorized ? [{ parentCapability: "eth_accounts" }] : [];
           if (method === "wallet_revokePermissions") {
+            if (revokeUnsupported)
+              throw Object.assign(new Error("Method unsupported"), {
+                code: 4200,
+              });
             authorized = false;
+            persist();
             return null;
           }
           if (method === "wallet_switchEthereumChain") {
@@ -220,6 +263,7 @@ export async function mockWallet(
                 code: 4001,
               });
             network = params![0].chainId;
+            persist();
             emit("chainChanged", network);
             return null;
           }
@@ -230,22 +274,37 @@ export async function mockWallet(
         ethereum: provider,
         walletMock: {
           calls,
+          setSilentUnavailable: (value: string) => {
+            silentUnavailable = value === "true";
+            persist();
+          },
           changeAccount: () => {
             current = accountB;
+            persist();
             emit("accountsChanged", [current]);
           },
           changeChain: (id: string) => {
             network = id;
+            persist();
             emit("chainChanged", id);
           },
           disconnect: () => {
             authorized = false;
+            persist();
             emit("accountsChanged", []);
           },
         },
       });
     },
-    { chain, reject, rejectSwitch, delay, accountA, accountB },
+    {
+      chain,
+      reject,
+      rejectSwitch,
+      delay,
+      revokeUnsupported,
+      accountA,
+      accountB,
+    },
   );
 }
 export async function walletCalls(page: Page): Promise<string[]> {
@@ -257,7 +316,11 @@ export async function walletCalls(page: Page): Promise<string[]> {
 }
 export async function walletEvent(
   page: Page,
-  method: "changeAccount" | "disconnect" | "changeChain",
+  method:
+    | "changeAccount"
+    | "disconnect"
+    | "changeChain"
+    | "setSilentUnavailable",
   value = "",
 ) {
   await page.evaluate(

@@ -34,7 +34,7 @@ A failed campaign refresh retains cached campaign data with a stale warning wher
 
 ## Wallet behavior
 
-- `reconnectOnMount=false`: connection is explicitly initiated each page session. Refresh does not prompt or automatically reconnect. Previously authorized wallets may reconnect after clicking Connect Wallet without a new permission dialog, depending on extension behavior.
+- `reconnectOnMount=true`: first authorization requires Connect Wallet; subsequent navigation/reload can silently restore an already-authorized MetaMask connection. The injected connector checks `eth_accounts` and reconnects without requesting permissions, signing or switching networks. If authorization is unavailable, it stays disconnected. Explicit Disconnect is retained by wagmi’s disconnect marker, even when extension permission revocation is unsupported. No app session manager or financial-data persistence is added.
 - Connect Wallet obtains the injected MetaMask provider and invokes wagmi connection only in its click handler. No chain ID is requested as part of connection, so an unsupported connected chain does not cause an automatic switch.
 - Connected state shows a shortened address and Sepolia or wrong-network status. Account/chain/disconnect events are handled by wagmi.
 - Only the explicit **Switch to Sepolia** button invokes a network switch. Rejections and unavailable extensions remain recoverable; public reads continue independently.
@@ -68,7 +68,7 @@ The cloud run used its existing `/usr/bin/chromium` via `PLAYWRIGHT_CHROMIUM_EXE
 | npm run typecheck | Passed |
 | npm run build | Passed |
 | npm test | 26 unit cases passed, 0 failed |
-| npm run test:browser | 21 browser scenarios passed, 0 failed |
+| npm run test:browser | 25 browser scenarios passed, 0 failed (including four continuity cases added in 4A) |
 | forge build | Passed; Solidity 0.8.20 |
 | forge test | 43 passed, 0 failed, 0 skipped; includes 256 fuzz cases |
 | forge fmt --check | Passed |
@@ -98,3 +98,9 @@ No deployed Sepolia contract exists, so real Sepolia contract integration and a 
 Vite reports an optional `ox`/Tempo `node:worker_threads` browser externalization and a ~597 kB minified entry chunk (~182 kB gzip) after adding the wallet/read libraries. This application does not use Tempo or worker APIs, and the tested read/wallet paths have no browser page errors. These non-fatal build notices were not suppressed. Playwright's local runner reports the inherited NO_COLOR/FORCE_COLOR conflict; the existing GitHub action runtime deprecation notices are unrelated to app behavior.
 
 There is intentionally no write-transaction integration, transaction retry/receipt UI, fund-moving action, public-chain deployment, or Iteration 5 work. The original Solidity sources, dependencies, tests and compiler settings are unchanged from the accepted baseline. Git author/committer must remain Ravin1010 with the required noreply address and no co-author trailers.
+
+## Checkpoint 4A — silent connection continuity
+
+The only production change enables wagmi’s supported `reconnectOnMount` behavior in the existing provider. The pinned injected connector’s `isAuthorized` checks accounts without prompting; reconnection calls its `connect({ isReconnecting: true })` path without a target chain. That path uses `eth_accounts`, skips `wallet_requestPermissions`/`eth_requestAccounts`, and makes no signing or network-switch request. Explicit disconnect remains protected by the connector’s default disconnect shim. See [WagmiProvider](https://wagmi.sh/react/api/WagmiProvider#reconnectonmount) and [injected connector](https://wagmi.sh/core/api/connectors/injected#shimdisconnect).
+
+The browser wallet fixture now persists test-only extension authorization, account, network and request history across document loads using sessionStorage. It stores no balances or other financial data and adds no production storage/session logic. Four new scenarios cover listing-to-detail navigation and reload restoration, account/network isolation after restoration, disconnect persistence with supported and unsupported permission revocation, and unavailable silent authorization without permission fallback. Existing assertions against automatic permissions, signing, transactions and switching remain intact. The responsive test explicitly disconnects/resets its fixture between viewport cases to preserve its original independent visual states.

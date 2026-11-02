@@ -82,7 +82,9 @@ test("fully funded is Active awaiting deadline and cannot overstate percentage",
 }) => {
   await mockRpc(page, { full: true, status: 0 });
   await page.goto(liveUrl + "/campaigns/1");
-  await expect(page.locator(".outcome strong")).toHaveText("Fully funded — awaiting deadline");
+  await expect(page.locator(".outcome strong")).toHaveText(
+    "Fully funded — awaiting deadline",
+  );
   await expect(page.getByRole("progressbar")).toHaveAttribute(
     "aria-valuenow",
     "100",
@@ -366,6 +368,13 @@ test("responsive demo and live pages preserve layout, keyboard access, and scree
       path: `../docs/iteration-4/screenshots/wrong-network-${width}.png`,
       fullPage: true,
     });
+    // Restore the disconnected/Sepolia fixture for the next viewport. The mock
+    // now preserves extension authorization and network across document loads.
+    await page.getByRole("button", { name: "Disconnect", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Connect Wallet" }),
+    ).toBeVisible();
+    await walletEvent(page, "changeChain", "0xaa36a7");
   }
   await page.goto(demoUrl + "/");
   await page.keyboard.press("Tab");
@@ -415,4 +424,126 @@ test("late responses from the previous account cannot overwrite the current wall
   await expect(page.locator(".wallet-contribution strong")).toHaveText(
     "0.75 ETH",
   );
+});
+
+test("authorized wallet silently restores across links, reloads and account/network changes", async ({
+  page,
+}) => {
+  await mockRpc(page);
+  await mockWallet(page);
+  await page.goto(liveUrl + "/campaigns");
+  await expect(page.locator(".campaign-card")).toHaveCount(2);
+  expect(
+    (await walletCalls(page)).filter((method) => forbidden.test(method)),
+  ).toEqual([]);
+  await page.getByRole("button", { name: "Connect Wallet" }).click();
+  await expect(
+    page.getByRole("button", { name: "Disconnect", exact: true }),
+  ).toBeVisible();
+  const explicitRequests = (await walletCalls(page)).filter((method) =>
+    forbidden.test(method),
+  );
+  expect(
+    explicitRequests.some((method) =>
+      /eth_requestAccounts|wallet_requestPermissions/.test(method),
+    ),
+  ).toBe(true);
+  await page
+    .getByRole("link", { name: "Verified community project 1", exact: true })
+    .click();
+  await expect(page.locator(".wallet-contribution strong")).toHaveText(
+    "0.25 ETH",
+  );
+  await page.reload();
+  await expect(page.locator(".wallet-contribution strong")).toHaveText(
+    "0.25 ETH",
+  );
+  await walletEvent(page, "changeAccount");
+  await expect(page.locator(".wallet-contribution strong")).toHaveText(
+    "0.75 ETH",
+  );
+  await page.reload();
+  await expect(page.locator(".wallet-contribution strong")).toHaveText(
+    "0.75 ETH",
+  );
+  await walletEvent(page, "changeChain", "0x1");
+  await expect(page.locator(".wallet-contribution strong")).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Switch to Sepolia" }),
+  ).toBeVisible();
+  await expect(page.locator(".wallet-contribution strong")).toHaveCount(0);
+  // Includes permission, signing, transaction and switch methods across every load.
+  expect(
+    (await walletCalls(page)).filter((method) => forbidden.test(method)),
+  ).toEqual(explicitRequests);
+});
+
+for (const revokeUnsupported of [false, true]) {
+  test(`explicit disconnect survives reload/navigation (revocation unsupported: ${revokeUnsupported})`, async ({
+    page,
+  }) => {
+    await mockRpc(page);
+    await mockWallet(page, { revokeUnsupported });
+    await page.goto(liveUrl + "/campaigns/1");
+    await page.getByRole("button", { name: "Connect Wallet" }).click();
+    await expect(page.locator(".wallet-contribution strong")).toHaveText(
+      "0.25 ETH",
+    );
+    await page.getByRole("button", { name: "Disconnect", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Connect Wallet" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem("test:metamask-extension")!)
+            .authorized,
+      ),
+    ).toBe(revokeUnsupported);
+    const explicitRequests = (await walletCalls(page)).filter((method) =>
+      forbidden.test(method),
+    );
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: "Connect Wallet" }),
+    ).toBeVisible();
+    await expect(page.locator(".wallet-contribution strong")).toHaveCount(0);
+    await page
+      .getByRole("navigation")
+      .getByRole("link", { name: "Explore campaigns" })
+      .click();
+    await expect(page.locator(".campaign-card")).toHaveCount(2);
+    await expect(
+      page.getByRole("button", { name: "Connect Wallet" }),
+    ).toBeVisible();
+    expect(
+      (await walletCalls(page)).filter((method) => forbidden.test(method)),
+    ).toEqual(explicitRequests);
+  });
+}
+
+test("unavailable silent authorization falls back to disconnected without prompting", async ({
+  page,
+}) => {
+  await mockRpc(page);
+  await mockWallet(page);
+  await page.goto(liveUrl + "/campaigns/1");
+  await page.getByRole("button", { name: "Connect Wallet" }).click();
+  await expect(page.locator(".wallet-contribution strong")).toHaveText(
+    "0.25 ETH",
+  );
+  const explicitRequests = (await walletCalls(page)).filter((method) =>
+    forbidden.test(method),
+  );
+  await walletEvent(page, "setSilentUnavailable", "true");
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Connect Wallet" }),
+  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator(".wallet-contribution strong")).toHaveCount(0);
+  await expect(page.locator("h1")).toHaveText("Verified community project 1");
+  expect(
+    (await walletCalls(page)).filter((method) => forbidden.test(method)),
+  ).toEqual(explicitRequests);
 });
