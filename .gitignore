@@ -25,3 +25,7 @@ contracts/lcov.info
 .idea/
 .DS_Store
 Thumbs.db
+
+# Frontend browser test output
+web/test-results/
+web/playwright-report/

@@ -1,3 +1,4 @@
+import { formatEther, parseEther } from "viem";
 export type Campaign = {
   id: string;
   title: string;
@@ -5,17 +6,23 @@ export type Campaign = {
   story: string;
   plan: string;
   creator: string;
-  goal: number;
-  raised: number;
+  goal: bigint;
+  raised: bigint;
   deadline: string;
   status: "Active" | "Successful" | "Failed" | "Cancelled";
   cover: string;
   coverTitle: string;
   coverNote: string;
+  mode: "demo" | "live";
+  withdrawn: boolean;
+  deadlineSeconds?: bigint;
 };
 // Fixed snapshot: dates and statuses intentionally do not track the visitor's clock.
 export const snapshot = "2 November 2026, 12:00 UTC";
-export const campaigns: Campaign[] = [
+const fixtures: (Omit<Campaign, "goal" | "raised" | "mode" | "withdrawn"> & {
+  goal: number;
+  raised: number;
+})[] = [
   {
     id: "1",
     title: "A little library. A bigger world.",
@@ -118,7 +125,23 @@ export const campaigns: Campaign[] = [
     coverNote: "THE SHARED TABLE KITCHEN",
   },
 ];
-export const eth = (value: number) =>
-  new Intl.NumberFormat("en", { maximumFractionDigits: 4 }).format(value);
-export const remaining = (campaign: Campaign) =>
-  Math.max(0, Number((campaign.goal - campaign.raised).toFixed(4)));
+// Fixture amounts are converted once; all displayed campaign accounting uses wei.
+export const campaigns: Campaign[] = fixtures.map((c) => ({
+  ...c,
+  goal: parseEther(String(c.goal)),
+  raised: parseEther(String(c.raised)),
+  mode: "demo",
+  withdrawn: false,
+}));
+export const eth = (value: bigint) => formatEther(value);
+export const remaining = (campaign: Pick<Campaign, "goal" | "raised">) =>
+  campaign.goal > campaign.raised ? campaign.goal - campaign.raised : 0n;
+// Integer percentages floor partial funding, so it can never round up to 100%.
+export const fundingPercent = (campaign: Pick<Campaign, "goal" | "raised">) =>
+  campaign.goal <= 0n
+    ? 0
+    : Number(
+        campaign.raised >= campaign.goal
+          ? 100n
+          : (campaign.raised * 100n) / campaign.goal,
+      );

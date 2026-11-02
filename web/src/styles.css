@@ -1528,3 +1528,27 @@ dialog p {
 .hero-footnote .spark-icon {
   color: var(--blue);
 }
+
+/* Read-only integration: retain the existing visual system and page layouts. */
+.wallet-control { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; max-width: 30rem; }
+.wallet-control p { flex-basis: 100%; font-size: .8rem; margin: 0; color: var(--navy, #17263c); }
+.wallet-control svg { width: 18px; height: 18px; }
+.wallet-address { font-size: .8rem; }
+.live-context code, .creator strong { overflow-wrap: anywhere; }
+.read-status { padding: 1rem 0; overflow-wrap: anywhere; }
+.read-status p { max-width: 75ch; }
+.read-status [role="alert"] { color: #9b3020; }
+.wallet-contribution { border-top: 1px solid #dfe5ef; margin-top: 1rem; padding-top: 1rem; }
+.campaign-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail-heading h1, .detail-heading p, .card-content h3, .card-content p { overflow-wrap: anywhere; }
+.pagination { margin-top: 1.5rem; }
+@media (max-width: 800px) {
+  .header-inner { flex-wrap: wrap; }
+  .wallet-control { max-width: 100%; }
+}
+/* Exact wei-derived amounts and wallet addresses can be wider than sample text. */
+.raised-large, .funding-panel dd, .funding-top, .funding-bottom, .wallet-contribution { overflow-wrap: anywhere; min-width: 0; }
+.funding-top, .funding-bottom { flex-wrap: wrap; gap: .4rem; }
+.creator > div { min-width: 0; }
+.creator-icon { flex-shrink: 0; }
+.raised-large.precise-amount { font-size: clamp(18px, 3vw, 28px); letter-spacing: -.5px; }

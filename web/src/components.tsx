@@ -1,6 +1,6 @@
 import { Arrow } from "./Icons";
 import type { Campaign } from "./campaigns";
-import { eth, remaining } from "./campaigns";
+import { eth, remaining, fundingPercent } from "./campaigns";
 
 export function Brand() {
   return (
@@ -18,8 +18,8 @@ export function CampaignStatusBadge({ campaign: c }: { campaign: Campaign }) {
   return (
     <span className={`badge ${c.status.toLowerCase()}`}>
       <span aria-hidden="true">●</span>{" "}
-      {c.status === "Active" && remaining(c) === 0
-        ? "Fully funded · Active"
+      {c.status === "Active" && remaining(c) === 0n
+        ? "Fully funded — awaiting deadline"
         : c.status}
     </span>
   );
@@ -70,7 +70,7 @@ export function Cover({
   );
 }
 export function FundingProgress({ campaign: c }: { campaign: Campaign }) {
-  const percent = Math.min(100, Math.max(0, (c.raised / c.goal) * 100));
+  const percent = fundingPercent(c);
   return (
     <div className="funding">
       <div className="funding-top">

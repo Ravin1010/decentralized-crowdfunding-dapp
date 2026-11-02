@@ -28,7 +28,7 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - Avoid generic AI/SaaS visual patterns: shiny gradients, glassmorphism, purple neon, meaningless decorations, repetitive cards, fake analytics.
 - Use meaningful hierarchy, restrained whitespace, clear financial data, accessible semantics, and intentional mobile design.
 - No unlicensed campaign photographs. Mock images/content must be identified as samples.
-- Iteration 2 implements the static UI prototype; wallet and blockchain integration remain deferred.
+- Preserve the accepted Iteration 2 visual design; implement only the wallet/blockchain behavior authorized for the current iteration.
 
 ## Engineering
 
@@ -43,7 +43,7 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - All new commits must use author and committer `Ravin1010 <75482385+Ravin1010@users.noreply.github.com>`; configure repository-local identity and verify `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT` before committing. Remove any identity environment overrides.
 - Never use a personal name/email, add co-author trailers (including AI tools), rewrite existing history, force-push, or modify `main`. Verify every new commit's author, committer, and message before opening the PR.
 
-## Iteration 3 boundary (this PR)
+## Iteration 4 boundary (this PR)
 
-Allowed: one crowdfunding Solidity contract, Foundry tests and pinned dependencies/configuration, relevant contract documentation, and minimal repository instructions.
-Not allowed: frontend changes, wallet/Web3 integration, backend/database, deployment, changing `main`, merging/auto-merging the PR, or starting Iteration 4. Preserve the accepted Iteration 2 frontend exactly.
+Allowed: explicit MetaMask connection/network switch, independent public Sepolia reads through wagmi/viem/TanStack Query, clear demo/live separation, focused tests, configuration and evidence. Preserve the approved visual design and permanent Git identity rules.
+Not allowed: contract logic/dependency changes, blockchain write transactions, public-chain deployments, backend/database, merging/auto-merging, or starting Iteration 5. Local Anvil deployment is permitted only for automated verification.
