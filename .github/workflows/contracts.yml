@@ -1,0 +1,35 @@
+name: Foundry checks
+
+on:
+  push:
+    branches: ["feature/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.0
+          cache: false
+      - name: Show Foundry version
+        run: forge --version
+      - name: Check formatting
+        run: forge fmt --check
+      - name: Build contracts
+        run: forge build
+      - name: Run tests
+        run: forge test -vvv
