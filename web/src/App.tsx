@@ -1,8 +1,17 @@
-import { Arrow, Spark, WalletIcon } from "./Icons";
+import { Arrow, Spark } from "./Icons";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { campaigns, eth, remaining, snapshot } from "./campaigns";
+import { eth, remaining, snapshot } from "./campaigns";
 import type { Campaign } from "./campaigns";
+import { parseEther } from "viem";
+import { Wallet } from "./Wallet";
+import { contractConfig } from "./blockchain/config";
+import {
+  parseCampaignId,
+  useCampaignList,
+  useCampaign,
+  useContribution,
+} from "./blockchain/reads";
 import {
   Brand,
   CampaignCard,
@@ -12,91 +21,29 @@ import {
 } from "./components";
 
 function Header() {
-  const dialog = useRef<HTMLDialogElement>(null);
   return (
-    <>
-      <header className="site-header">
-        <div className="container header-inner">
-          <Brand />
-          <nav aria-label="Main navigation">
-            <a
-              href="/campaigns"
-              aria-current={
-                location.pathname.startsWith("/campaigns") ? "page" : undefined
-              }
-            >
-              Explore campaigns
-            </a>
-            <a
-              href="/create"
-              aria-current={
-                location.pathname === "/create" ? "page" : undefined
-              }
-            >
-              Start a campaign
-            </a>
-          </nav>
-          <button
-            className="button wallet-button"
-            onClick={() => dialog.current?.showModal()}
+    <header className="site-header">
+      <div className="container header-inner">
+        <Brand />
+        <nav aria-label="Main navigation">
+          <a
+            href="/campaigns"
+            aria-current={
+              location.pathname.startsWith("/campaigns") ? "page" : undefined
+            }
           >
-            <span aria-hidden="true">
-              <WalletIcon />
-            </span>{" "}
-            Wallet preview
-          </button>
-        </div>
-      </header>
-      <dialog ref={dialog} aria-labelledby="wallet-title">
-        <div className="dialog-heading">
-          <span className="eyebrow">VISUAL PREVIEW ONLY</span>
-          <button
-            className="close"
-            aria-label="Close wallet preview"
-            onClick={() => dialog.current?.close()}
+            Explore campaigns
+          </a>
+          <a
+            href="/create"
+            aria-current={location.pathname === "/create" ? "page" : undefined}
           >
-            ×
-          </button>
-        </div>
-        <h2 id="wallet-title">Your wallet, your choice.</h2>
-        <p>
-          Browsing is always open. Wallet connection and transactions will be
-          available in a future iteration.
-        </p>
-        <ul className="wallet-states">
-          <li>
-            <strong>Disconnected</strong>
-            <span>Connect a wallet to take part.</span>
-          </li>
-          <li>
-            <strong>Connected · Sepolia</strong>
-            <code>0x1234…ABCD · demo address</code>
-          </li>
-          <li>
-            <strong>Wrong network</strong>
-            <span>Switch to Sepolia before continuing.</span>
-          </li>
-          <li>
-            <strong>Awaiting signature</strong>
-            <span>Review the request in your wallet.</span>
-          </li>
-          <li>
-            <strong>Transaction pending</strong>
-            <span>Waiting for chain confirmation.</span>
-          </li>
-        </ul>
-        <p className="small">
-          These are isolated design examples. No wallet is connected and no
-          transaction is being processed.
-        </p>
-        <button
-          className="button primary"
-          onClick={() => dialog.current?.close()}
-        >
-          Continue browsing
-        </button>
-      </dialog>
-    </>
+            Start a campaign
+          </a>
+        </nav>
+        <Wallet />
+      </div>
+    </header>
   );
 }
 function Footer() {
@@ -105,7 +52,7 @@ function Footer() {
       <div className="container footer-inner">
         <Brand />
         <p>Good ideas move forward, together.</p>
-        <span>Static prototype · No real fundraising</span>
+        <span>Read-only · No transactions enabled</span>
         <a href="/campaigns">
           Explore <Arrow />
         </a>
@@ -114,18 +61,31 @@ function Footer() {
   );
 }
 function DemoNote() {
+  if (contractConfig.mode === "live")
+    return (
+      <div className="demo-note live-context">
+        <span className="demo-label">SEPOLIA · READ ONLY</span>
+        <span>
+          Contract <code>{contractConfig.address}</code>
+          <br />
+          Chain 11155111 · Public RPC reads · No transactions enabled
+        </span>
+      </div>
+    );
   return (
     <div className="demo-note">
       <span className="demo-label">DEMO</span>
       <span>
-        Fictional campaigns & sample ETH amounts. No real funds accepted.
+        Fictional campaigns & sample ETH amounts. No real funds accepted.{" "}
+        {contractConfig.demoReason}
         <span className="snapshot"> Fixed snapshot: {snapshot}.</span>
       </span>
     </div>
   );
 }
 function Home() {
-  const c = campaigns[0];
+  const list = useCampaignList();
+  const c = list.data?.[0];
   return (
     <>
       <section className="hero container">
@@ -169,38 +129,50 @@ function Home() {
             Community powered. Built for transparency.
           </div>
         </div>
-        <div className="hero-feature">
-          <div className="feature-kicker">
-            <span>IN THE SPOTLIGHT</span>
-            <span>01 / DEMO PROJECT</span>
-          </div>
-          <a
-            href="/campaigns/1"
-            className="feature-cover-link"
-            aria-label={`Discover ${c.title}`}
-          >
-            <Cover campaign={c} featured />
-          </a>
-          <div className="feature-info">
-            <div>
-              <CampaignStatusBadge campaign={c} />
-              <h2>
-                <a href="/campaigns/1">
-                  A little library.
-                  <br />A bigger world.
-                </a>
-              </h2>
+        {c ? (
+          <div className="hero-feature">
+            <div className="feature-kicker">
+              <span>IN THE SPOTLIGHT</span>
+              <span>
+                {c.mode === "demo" ? "01 / DEMO PROJECT" : `CAMPAIGN #${c.id}`}
+              </span>
             </div>
             <a
-              className="circle-link"
-              href="/campaigns/1"
-              aria-label="View little library campaign"
+              href={c ? `/campaigns/${c.id}` : "/campaigns"}
+              className="feature-cover-link"
+              aria-label={`Discover ${c.title}`}
             >
-              <Arrow />
+              <Cover campaign={c} featured />
+            </a>
+            <div className="feature-info">
+              <div>
+                <CampaignStatusBadge campaign={c} />
+                <h2>
+                  <a href={c ? `/campaigns/${c.id}` : "/campaigns"}>
+                    {c.title}
+                  </a>
+                </h2>
+              </div>
+              <a
+                className="circle-link"
+                href={c ? `/campaigns/${c.id}` : "/campaigns"}
+                aria-label={`View ${c.title}`}
+              >
+                <Arrow />
+              </a>
+            </div>
+            <FundingProgress campaign={c} />
+          </div>
+        ) : (
+          <div className="hero-feature">
+            <p className="eyebrow">THE COMMUNITY NOTICEBOARD</p>
+            <h2>A space for shared possibilities.</h2>
+            <p>Explore campaigns to see what’s on the noticeboard.</p>
+            <a className="text-link" href="/campaigns">
+              Explore campaigns <Arrow />
             </a>
           </div>
-          <FundingProgress campaign={c} />
-        </div>
+        )}
       </section>
       <div className="container">
         <DemoNote />
@@ -215,9 +187,16 @@ function Home() {
             View all campaigns <Arrow />
           </a>
         </div>
+        <ReadStatus result={list} />
         <div className="campaign-grid">
-          {[campaigns[1], campaigns[2], campaigns[5]].map((c) => (
-            <CampaignCard key={c.id} campaign={c} />
+          {(contractConfig.mode === "demo" && list.data
+            ? [list.data[1], list.data[2], list.data[5]]
+            : list.data?.slice(0, 3) || []
+          ).map((c) => (
+            <CampaignCard
+              key={`${contractConfig.chainId}:${contractConfig.address}:${c.id}`}
+              campaign={c}
+            />
           ))}
         </div>
       </section>
@@ -235,7 +214,7 @@ function Home() {
               <br />A community that makes the difference.
             </p>
             <span className="small">
-              The intended model for future blockchain integration.
+              Financial actions will be available in Iteration 5.
             </span>
           </div>
           <ol className="steps">
@@ -288,6 +267,8 @@ function Home() {
   );
 }
 function Explore() {
+  const [page, setPage] = useState(0);
+  const list = useCampaignList(page);
   return (
     <div className="container page">
       <div className="page-intro">
@@ -306,34 +287,55 @@ function Explore() {
       <DemoNote />
       <div className="list-heading">
         <h2>
-          All campaigns <span>06</span>
+          All campaigns <span>{list.total?.toString() ?? "…"}</span>
         </h2>
         <span>One community. Many possibilities.</span>
       </div>
+      <ReadStatus result={list} />
       <div className="campaign-grid">
-        {campaigns.map((c) => (
+        {(list.data || []).map((c) => (
           <CampaignCard key={c.id} campaign={c} />
         ))}
       </div>
-      <p className="list-note">
-        You’ve seen all six demonstration campaigns. Every project here is
-        fictional.
-      </p>
+      {contractConfig.mode === "demo" ? (
+        <p className="list-note">
+          You’ve seen all six demonstration campaigns. Every project here is
+          fictional.
+        </p>
+      ) : (
+        <div className="actions pagination" aria-label="Campaign pages">
+          <button
+            className="button"
+            disabled={page === 0}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <span>Page {page + 1}</span>
+          <button
+            className="button"
+            disabled={!list.hasNext}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 function Detail({ campaign: c }: { campaign: Campaign }) {
-  const full = remaining(c) === 0;
+  const full = remaining(c) === 0n;
   const message =
     c.status === "Cancelled"
       ? "Cancelled by the creator before the deadline. Contributors would be able to claim their own refunds."
       : c.status === "Failed"
         ? "The deadline passed without reaching the goal. Contributors would be able to claim their own refunds."
         : c.status === "Successful"
-          ? "The goal was met and the deadline has passed. The creator would now be eligible to withdraw."
+          ? "The goal was met and the deadline has passed. The creator can withdraw once under the contract rules, unless already withdrawn."
           : full
             ? "The goal is met. This campaign remains Active until its deadline; further contributions are closed."
-            : "Contributions would be open until the deadline or until the goal is reached.";
+            : "The campaign is accepting funding under its contract rules. Transactions are unavailable in this read-only checkpoint.";
   return (
     <div className="container page detail-page">
       <a className="back-link" href="/campaigns">
@@ -350,25 +352,41 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
           <Cover campaign={c} featured />
           <div className="story">
             <p className="eyebrow">THE IDEA BEHIND THE CAMPAIGN</p>
-            <h2>A small project with shared purpose.</h2>
-            <p>{c.story}</p>
-            <h3>What the funding makes possible</h3>
-            <p>{c.plan}</p>
+            <h2>
+              {c.mode === "demo"
+                ? "A small project with shared purpose."
+                : "The creator’s description"}
+            </h2>
+            <p className="campaign-description">
+              {c.mode === "demo" ? c.story : c.description}
+            </p>
+            {c.mode === "demo" && (
+              <>
+                <h3>What the funding makes possible</h3>
+                <p>{c.plan}</p>
+              </>
+            )}
             <div className="creator">
               <span className="creator-icon" aria-hidden="true">
                 <Arrow />
               </span>
               <div>
-                <span className="small">Fictional project creator</span>
+                <span className="small">
+                  {c.mode === "demo"
+                    ? "Fictional project creator"
+                    : "Creator wallet"}
+                </span>
                 <strong>{c.creator}</strong>
-                <code>0x1234…ABCD · demo wallet</code>
+                {c.mode === "demo" && <code>0x1234…ABCD · demo wallet</code>}
               </div>
             </div>
           </div>
         </div>
         <aside className="funding-panel" aria-label="Campaign funding">
           <p className="eyebrow">A COLLECTIVE EFFORT</p>
-          <div className="raised-large">
+          <div
+            className={`raised-large ${eth(c.raised).length > 14 ? "precise-amount" : ""}`}
+          >
             {eth(c.raised)} <span>ETH</span>
           </div>
           <p className="muted">raised of a {eth(c.goal)} ETH goal</p>
@@ -388,12 +406,22 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
               <dt>Campaign status</dt>
               <dd>{c.status}</dd>
             </div>
+            <div>
+              <dt>Creator withdrawal</dt>
+              <dd>
+                {c.mode === "demo"
+                  ? "Sample only"
+                  : c.withdrawn
+                    ? "Completed"
+                    : "Not withdrawn"}
+              </dd>
+            </div>
           </dl>
           <div className={`outcome ${c.status.toLowerCase()}`}>
             <strong>
               {c.status === "Active"
                 ? full
-                  ? "Fully funded · awaiting deadline"
+                  ? "Fully funded — awaiting deadline"
                   : "Help this idea take shape"
                 : c.status === "Successful"
                   ? "Goal reached. A new beginning."
@@ -420,13 +448,16 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
           )}
           <button className="button primary full-width" disabled>
             {c.status === "Active" && !full
-              ? "Contribute ETH · prototype only"
+              ? "Contribute ETH · unavailable"
               : "Contributions closed"}
           </button>
           <p className="small panel-note">
-            Wallet and contract integration are not available. No contributions,
-            withdrawals or refunds can be made in this prototype.
+            Read-only checkpoint. Contributions, withdrawals, refunds and
+            cancellation are unavailable until Iteration 5.
           </p>
+          {c.mode === "live" && (
+            <WalletContribution campaignId={BigInt(c.id)} />
+          )}
           <a className="text-link" href="/campaigns">
             Explore more ideas <Arrow />
           </a>
@@ -452,8 +483,15 @@ function Create() {
     if (!values.title.trim()) next.title = "Give your campaign a title.";
     if (!values.description.trim())
       next.description = "Tell people about your project.";
-    if (!Number.isFinite(Number(values.goal)) || Number(values.goal) <= 0)
-      next.goal = "Enter a funding goal greater than 0 ETH.";
+    try {
+      if (
+        parseEther(values.goal) <= 0n ||
+        !/^\d+(\.\d{1,18})?$/.test(values.goal)
+      )
+        throw new Error();
+    } catch {
+      next.goal = "Enter a positive ETH amount with up to 18 decimal places.";
+    }
     if (
       !Number.isInteger(Number(values.duration)) ||
       Number(values.duration) < 1 ||
@@ -641,7 +679,7 @@ function Create() {
 }
 function App() {
   const path = location.pathname.replace(/\/$/, "") || "/";
-  const c = campaigns.find((c) => path === `/campaigns/${c.id}`);
+  const detailMatch = path.match(/^\/campaigns\/([^/]+)$/);
   const title =
     path === "/"
       ? "Community-powered ideas"
@@ -649,7 +687,9 @@ function App() {
         ? "Explore campaigns"
         : path === "/create"
           ? "Start a campaign"
-          : c?.title || "Page not found";
+          : detailMatch
+            ? "Campaign details"
+            : "Page not found";
   document.title = `${title} · DeCen Crowdfund`;
   return (
     <>
@@ -664,8 +704,8 @@ function App() {
           <Explore />
         ) : path === "/create" ? (
           <Create />
-        ) : c ? (
-          <Detail campaign={c} />
+        ) : detailMatch ? (
+          <CampaignDetail idText={detailMatch[1]} />
         ) : (
           <div className="container page">
             <h1>This page isn’t here.</h1>
@@ -681,3 +721,124 @@ function App() {
   );
 }
 export default App;
+
+type ReadResult = {
+  error?: string | null;
+  loading: boolean;
+  refreshing: boolean;
+  updatedAt: number;
+  refresh: () => Promise<void>;
+  data?: unknown;
+  total?: bigint;
+};
+function ReadStatus({ result }: { result: ReadResult }) {
+  if (contractConfig.mode === "demo") return null;
+  return (
+    <div className="read-status" aria-live="polite">
+      {result.error ? (
+        <p role="alert">
+          Could not read the Sepolia contract.{" "}
+          {result.data
+            ? "Previous data shown — stale, not confirmed by the latest refresh."
+            : "No campaign data is available."}{" "}
+          {result.error}
+        </p>
+      ) : result.loading ? (
+        <p role="status">Loading campaigns from Sepolia…</p>
+      ) : result.total === 0n ? (
+        <p role="status">No campaigns yet. This contract has no campaigns.</p>
+      ) : (
+        <p>
+          {result.refreshing
+            ? "Refreshing public data…"
+            : "Public data loaded."}{" "}
+          {result.updatedAt > 0 &&
+            `Last successful read: ${new Date(result.updatedAt).toLocaleTimeString()}.`}
+        </p>
+      )}
+      <button
+        className="button"
+        disabled={result.refreshing}
+        onClick={() => void result.refresh()}
+      >
+        Refresh public data
+      </button>
+    </div>
+  );
+}
+function CampaignDetail({ idText }: { idText: string }) {
+  const id = parseCampaignId(idText);
+  if (id === undefined)
+    return (
+      <div className="container page">
+        <h1>Invalid campaign ID</h1>
+        <p>Choose a positive campaign ID from the noticeboard.</p>
+        <a href="/campaigns">All campaigns</a>
+      </div>
+    );
+  return <CampaignRead id={id} />;
+}
+function CampaignRead({ id }: { id: bigint }) {
+  const result = useCampaign(id);
+  if (!result.data)
+    return (
+      <div className="container page">
+        <DemoNote />
+        <h1>Campaign #{id.toString()}</h1>
+        <ReadStatus result={result} />
+        {!result.loading && !result.error && <p>Campaign not found.</p>}
+        <a href="/campaigns">All campaigns</a>
+      </div>
+    );
+  return (
+    <>
+      <div className="container">
+        <ReadStatus result={result} />
+      </div>
+      <Detail campaign={result.data} />
+    </>
+  );
+}
+function WalletContribution({ campaignId }: { campaignId: bigint }) {
+  const read = useContribution(campaignId);
+  return (
+    <div className="wallet-contribution" aria-live="polite">
+      <h3>Your contribution</h3>
+      {!read.isConnected ? (
+        <p>Connect your wallet to read your recorded contribution.</p>
+      ) : read.chainId !== contractConfig.chainId ? (
+        <p>Switch to Sepolia to read this wallet’s contribution.</p>
+      ) : read.rpcError ? (
+        <p role="alert">
+          Public RPC unavailable. Your contribution could not be confirmed.
+        </p>
+      ) : !read.enabled ? (
+        <p>Waiting for the public RPC…</p>
+      ) : read.isError ? (
+        <p role="alert">
+          Your contribution could not be confirmed. Refresh to retry.
+        </p>
+      ) : read.data === undefined ? (
+        <p>Reading your contribution…</p>
+      ) : (
+        <p>
+          <strong>{eth(read.data)} ETH</strong>
+          {read.isFetching && " · Refreshing…"}
+        </p>
+      )}
+      <p className="small">
+        Recorded contributions are not automatically refundable balances.
+        Successful campaigns retain records after withdrawal.
+      </p>
+      {read.enabled && (
+        <button
+          className="button"
+          disabled={read.isFetching}
+          onClick={() => void read.refetch()}
+        >
+          Refresh your contribution
+        </button>
+      )}
+    </div>
+  );
+}
