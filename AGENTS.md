@@ -28,7 +28,7 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - Avoid generic AI/SaaS visual patterns: shiny gradients, glassmorphism, purple neon, meaningless decorations, repetitive cards, fake analytics.
 - Use meaningful hierarchy, restrained whitespace, clear financial data, accessible semantics, and intentional mobile design.
 - No unlicensed campaign photographs. Mock images/content must be identified as samples.
-- Do not implement full UI design during Iteration 1; the static prototype is Iteration 2.
+- Iteration 2 implements the static UI prototype; wallet and blockchain integration remain deferred.
 
 ## Engineering
 
@@ -38,7 +38,7 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - Never commit secrets, private keys, seed phrases, RPC credentials, or `.env` files.
 - Verify builds/tests whenever dependencies and tools are available; if unable, state so rather than claiming success.
 
-## Iteration 1 boundary (this PR)
+## Iteration 2 boundary (this PR)
 
-Allowed: repository skeleton, Vite/React/TypeScript startup shell, Foundry configuration, docs, gitignore, README.
-Not allowed: Solidity contract implementation, wallet connection, Web3 reads/writes, fictional campaigns presented as real data, detailed prototype screens, deployment, or changing `main`.
+Allowed: responsive static frontend screens, clearly labeled fictional campaign fixtures, local presentational form interactions, visual wallet examples, and browser screenshots. Preserve the Iteration 1 foundation.
+Not allowed: Solidity contract implementation, wallet connection, Web3 reads/writes, fictional campaigns presented as real data, backend/database, deployment, changing `main`, or starting Iteration 3.

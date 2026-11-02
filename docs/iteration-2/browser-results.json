@@ -1,0 +1,27 @@
+{
+  "viewports": [
+    "home 1440px: no overflow, fonts loaded, screenshot captured",
+    "explore 1440px: no overflow, fonts loaded, screenshot captured",
+    "detail 1440px: no overflow, fonts loaded, screenshot captured",
+    "create 1440px: no overflow, fonts loaded, screenshot captured",
+    "home 768px: no overflow, fonts loaded, screenshot captured",
+    "explore 768px: no overflow, fonts loaded, screenshot captured",
+    "detail 768px: no overflow, fonts loaded, screenshot captured",
+    "create 768px: no overflow, fonts loaded, screenshot captured",
+    "home 375px: no overflow, fonts loaded, screenshot captured",
+    "explore 375px: no overflow, fonts loaded, screenshot captured",
+    "detail 375px: no overflow, fonts loaded, screenshot captured",
+    "create 375px: no overflow, fonts loaded, screenshot captured"
+  ],
+  "checks": [
+    "six statuses and capped progress",
+    "disabled financial actions",
+    "required, positive goal, and 30-day boundary validation",
+    "local review, no persistence",
+    "wallet dialog Escape and focus return",
+    "keyboard skip link",
+    "reduced motion",
+    "unknown route fallback"
+  ],
+  "browser_errors": []
+}
