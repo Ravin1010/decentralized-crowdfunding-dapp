@@ -25,14 +25,17 @@ export function readConfiguration(address = "", rpc = "") {
       "Invalid public RPC URL. Use HTTPS, or HTTP on localhost for verification.";
   }
   return {
-    mode: validAddress ? ("live" as const) : ("demo" as const),
+    mode: address ? ("live" as const) : ("demo" as const),
     address: validAddress ? getAddress(address) : undefined,
     rpcUrl,
     chainId: sepolia.id,
-    error: validAddress ? error : undefined,
-    demoReason: address
-      ? "No valid contract address is configured. Showing samples."
-      : "No contract is configured or deployed by this application. Showing samples.",
+    error: address
+      ? validAddress
+        ? error
+        : "Invalid contract address. Configure a valid nonzero Sepolia deployment address, or leave it blank for demo mode."
+      : undefined,
+    demoReason:
+      "No contract is configured or deployed by this application. Showing samples.",
   };
 }
 export const contractConfig = readConfiguration(

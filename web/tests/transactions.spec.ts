@@ -811,3 +811,34 @@ test("refund confirmation distinguishes refresh progress failure and verified su
   await expect(page.locator(".wallet-contribution strong")).toHaveText("0 ETH");
   expect(state.submitted).toHaveLength(1);
 });
+
+
+test("pending navigation and reload never resend or invent transaction outcomes", async ({ page }) => {
+  const { state } = await transactionFixture(page);
+  await page.goto(liveUrl + "/campaigns/1");
+  await connect(page);
+  await page.getByLabel("Contribution amount (ETH)").fill("0.5");
+  await page.getByRole("button", { name: "Contribute ETH", exact: true }).click();
+  await expect(page.getByText("Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+  expect(state.submitted).toHaveLength(1);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByText(/Save this hash before leaving or reloading/)).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await page.screenshot({
+    path: "../docs/iteration-6/screenshots/simulated-pending-notice-mobile.png",
+    fullPage: true,
+  });
+  const permissions = (await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method)).length;
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
+  await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+  await expect(page.locator(".raised-large")).toContainText("1 ETH");
+  await page.goto(liveUrl + "/campaigns");
+  await page.goto(liveUrl + "/campaigns/1");
+  await expect(page.locator(".raised-large")).toContainText("1 ETH");
+  await page.getByRole("button", { name: "Refresh public data" }).click();
+  expect(state.submitted).toHaveLength(1);
+  expect((await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method))).toHaveLength(permissions);
+  await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+});

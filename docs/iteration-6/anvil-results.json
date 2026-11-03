@@ -1,0 +1,24 @@
+{
+  "network": "temporary localhost Anvil, chain ID 11155111",
+  "publicChainDeployment": false,
+  "deploymentReceipt": "success",
+  "lifecycleScenariosPassed": 3,
+  "uiLifecycles": 2,
+  "multiWalletRpcLifecycles": 1,
+  "abiMatches": true,
+  "runtimeBytecodeMatches": true,
+  "creationBytecodeBytes": 4030,
+  "runtimeBytecodeBytes": 3997,
+  "creationBytecodeKeccak256": "0x202c464ec9e438aef048e3759d6a2def21492b9af4c773bc973c2c14c4cd1c52",
+  "runtimeBytecodeKeccak256": "0x5b1a0eabdf6cde465b6427bf7d7c2b6542fa748dbac6cd60543d80ba9ebededd",
+  "contractWriteTransactions": 12,
+  "uiWriteTransactions": 7,
+  "supplementalRpcWriteTransactions": 5,
+  "rejectedAuthorizationSimulations": 2,
+  "results": [
+    "UI create → contribute exact goal → advance local time → successful creator withdrawal; historical raised preserved",
+    "UI create → partial contribution → explicit cancellation → individual refund; authoritative wallet contribution zero, historical raised preserved",
+    "Multi-wallet failed campaign: distinct creator/two contributors; unauthorized withdrawal and creator refund simulations rejected; independent refunds preserve other wallet balance and historical raised"
+  ],
+  "pageErrors": []
+}

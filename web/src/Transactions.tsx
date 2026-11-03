@@ -37,6 +37,13 @@ export function TransactionFeedback({
       {state.phase === "pending_confirmation" && state.message && (
         <p>{state.message}</p>
       )}
+      {state.phase === "pending_confirmation" && (
+        <p className="small">
+          Save this hash before leaving or reloading. This page does not retain
+          pending transactions. Check your wallet or explorer history before
+          submitting the same action again.
+        </p>
+      )}
       {state.context && (
         <p className="small">
           Submission wallet: <code>{shortAddress(state.context.account)}</code>{" "}

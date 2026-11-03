@@ -65,13 +65,19 @@ describe("contract model and configuration", () => {
     expect(parseCampaignId((2n ** 256n - 1n).toString())).toBe(
       2n ** 256n - 1n,
     ));
-  it("defaults to demo without a valid nonzero contract", () => {
+  it("defaults to demo only when the contract address is empty", () => {
     expect(readConfiguration().mode).toBe("demo");
-    expect(readConfiguration("bad").mode).toBe("demo");
-    expect(
-      readConfiguration("0x0000000000000000000000000000000000000000").mode,
-    ).toBe("demo");
+    expect(readConfiguration().error).toBeUndefined();
   });
+  it.each(["bad", "0x0000000000000000000000000000000000000000"])(
+    "keeps invalid deployment %s out of demo mode",
+    (address) => {
+      const config = readConfiguration(address);
+      expect(config.mode).toBe("live");
+      expect(config.address).toBeUndefined();
+      expect(config.error).toContain("Invalid contract address");
+    },
+  );
   it("uses Sepolia with a public default endpoint", () => {
     const config = readConfiguration(address);
     expect(config.mode).toBe("live");
