@@ -1552,3 +1552,11 @@ dialog p {
 .creator > div { min-width: 0; }
 .creator-icon { flex-shrink: 0; }
 .raised-large.precise-amount { font-size: clamp(18px, 3vw, 28px); letter-spacing: -.5px; }
+
+.transaction-feedback { margin-block: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--mist); overflow-wrap: anywhere; }
+.transaction-feedback[role="alert"] { background: #f9e8e3; }
+.transaction-feedback p { font-size: .85rem; }
+.transaction-feedback button, .transaction-feedback a { margin-top: .5rem; }
+.transaction-hash code { display: block; font-size: .75rem; }
+.campaign-actions > button, .cancel-confirmation button { margin-top: .75rem; }
+.cancel-confirmation { padding: 1rem; margin-block: .75rem; border: 1px solid var(--border); border-radius: 8px; }

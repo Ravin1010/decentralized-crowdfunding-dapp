@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run src",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:anvil": "node --experimental-strip-types tests/anvil-lifecycle.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "5.105.1",
