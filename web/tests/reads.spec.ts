@@ -549,3 +549,24 @@ test("unavailable silent authorization falls back to disconnected without prompt
     (await walletCalls(page)).filter((method) => forbidden.test(method)),
   ).toEqual(explicitRequests);
 });
+
+
+test("invalid deployment configuration reports an error without demo fallback or wallet requests", async ({ page }) => {
+  const rpc = await mockRpc(page);
+  await mockWallet(page);
+  await page.goto("http://127.0.0.1:5176/campaigns");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByText("CONFIGURATION", { exact: true })).toBeVisible();
+  await expect(page.getByRole("alert").first()).toContainText("Invalid contract address");
+  await expect(page.locator(".campaign-card")).toHaveCount(0);
+  await expect(page.getByText("DEMO", { exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(rpc.calls).toEqual([]);
+  expect((await walletCalls(page)).filter((method) => forbidden.test(method))).toEqual([]);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await page.screenshot({
+    path: "../docs/iteration-6/screenshots/configuration-error-mobile.png",
+    fullPage: true,
+  });
+  await expect(page.getByRole("button", { name: "Connect Wallet", exact: true })).toBeVisible();
+});

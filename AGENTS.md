@@ -43,7 +43,7 @@ Read `docs/product-spec.md`, `docs/design-system.md`, `docs/architecture.md`, an
 - All new commits must use author and committer `Ravin1010 <75482385+Ravin1010@users.noreply.github.com>`; configure repository-local identity and verify `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT` before committing. Remove any identity environment overrides.
 - Never use a personal name/email, add co-author trailers (including AI tools), rewrite existing history, force-push, or modify `main`. Verify every new commit's author, committer, and message before opening the PR.
 
-## Iteration 5 boundary (this PR)
+## Iteration 6A boundary (this PR)
 
-Allowed: the five explicitly initiated crowdfunding write flows, receipt-based confirmation, targeted authoritative query refresh, focused tests, local Anvil verification and relevant documentation. Preserve wallet continuity and the approved visual design.
-Not allowed: contract/test/dependency changes to Solidity, public-chain deployment, optimistic financial data, automatic signatures/transactions/retries/network switching, new global stores, backend/indexers, merging/auto-merging, or Iteration 6. Keep all permanent Git identity rules.
+Allowed: deployment-readiness review, full local regression, focused safety/configuration corrections, temporary local Anvil verification, deployment documentation and a future 6B handoff. Preserve the accepted architecture and visual design.
+Not allowed: Solidity business-rule/dependency changes, public-chain deployment or transactions, requesting credentials, new product features/infrastructure, automatic wallet actions, merging/auto-merging, or executing Checkpoints 6B/6C. A release-blocking contract defect must be documented and stopped for review. Keep all permanent Git identity rules.

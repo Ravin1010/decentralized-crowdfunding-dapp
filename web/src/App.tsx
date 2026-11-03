@@ -63,6 +63,13 @@ function Footer() {
   );
 }
 function DemoNote() {
+  if (contractConfig.error)
+    return (
+      <div className="demo-note" role="alert">
+        <span className="demo-label">CONFIGURATION</span>
+        <span>{contractConfig.error}</span>
+      </div>
+    );
   if (contractConfig.mode === "live")
     return (
       <div className="demo-note live-context">

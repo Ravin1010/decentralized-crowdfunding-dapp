@@ -9,6 +9,7 @@ import {
   http,
   parseEther,
   multicall3Abi,
+  keccak256,
 } from "viem";
 import { sepolia } from "viem/chains";
 import { crowdfundingAbi as abi } from "../src/blockchain/abi.ts";
@@ -56,7 +57,7 @@ try {
     } catch {}
     await pause(100);
   }
-  const [account] = await wallet.getAddresses();
+  const [account, contributor, secondContributor] = await wallet.getAddresses();
   // Sepolia's existing public read path batches through canonical Multicall3.
   // Install viem's canonical fixture only on this isolated local Anvil chain.
   const multicallHash = await wallet.deployContract({
@@ -83,6 +84,9 @@ try {
   assert.equal(deployed.status, "success");
   const address = deployed.contractAddress;
   assert.ok(address);
+  const runtimeCode = await client.getBytecode({ address });
+  assert.equal(runtimeCode, artifact.deployedBytecode.object);
+
   vite = spawn(
     process.execPath,
     [
@@ -322,17 +326,77 @@ try {
     path: "../docs/iteration-5/screenshots/anvil-refunded-mobile.png",
     fullPage: true,
   });
+  // Focused multi-wallet RPC lifecycle supplements the two complete UI flows.
+  // All signers are temporary unlocked Anvil accounts, never public wallets.
+  async function localWrite(sender, functionName, args, value) {
+    const hash = await wallet.writeContract({
+      account: sender, address, abi, functionName, args,
+      ...(value ? { value } : {}),
+    });
+    const receipt = await client.waitForTransactionReceipt({ hash });
+    assert.equal(receipt.status, "success");
+  }
+  await assert.rejects(
+    client.simulateContract({
+      account: contributor, address, abi,
+      functionName: "withdrawFunds", args: [1n],
+    }),
+    /NotCreator/,
+  );
+  await localWrite(account, "createCampaign", [
+    "Multi-wallet failed campaign", "Local verification only", parseEther("1"), 60n,
+  ]);
+  await localWrite(contributor, "contribute", [3n], parseEther("0.002"));
+  await localWrite(secondContributor, "contribute", [3n], parseEther("0.003"));
+  await client.request({ method: "evm_increaseTime", params: [61] });
+  await client.request({ method: "evm_mine", params: [] });
+  await assert.rejects(
+    client.simulateContract({
+      account, address, abi, functionName: "claimRefund", args: [3n],
+    }),
+    /NoContribution/,
+  );
+  const contributionOf = (walletAddress) => client.readContract({
+    address, abi, functionName: "contributions", args: [3n, walletAddress],
+  });
+  assert.equal(await contributionOf(contributor), parseEther("0.002"));
+  await localWrite(contributor, "claimRefund", [3n]);
+  assert.equal(await contributionOf(contributor), 0n);
+  assert.equal(await contributionOf(secondContributor), parseEther("0.003"));
+  await localWrite(secondContributor, "claimRefund", [3n]);
+  [campaign, status] = await client.readContract({
+    address, abi, functionName: "getCampaign", args: [3n],
+  });
+  assert.equal(status, 2);
+  assert.equal(campaign.amountRaised, parseEther("0.005"));
+  assert.equal(await contributionOf(secondContributor), 0n);
+  assert.equal(await client.getBalance({ address }), 0n);
+  results.push(
+    "Multi-wallet failed campaign: distinct creator/two contributors; unauthorized withdrawal and creator refund simulations rejected; independent refunds preserve other wallet balance and historical raised",
+  );
   const report = {
     network: "temporary localhost Anvil, chain ID 11155111",
     publicChainDeployment: false,
     deploymentReceipt: deployed.status,
-    lifecycleScenariosPassed: 2,
-    contractWriteTransactions: 7,
+    lifecycleScenariosPassed: 3,
+    uiLifecycles: 2,
+    multiWalletRpcLifecycles: 1,
+    abiMatches: true,
+    runtimeBytecodeMatches: true,
+    creationBytecodeBytes: (artifact.bytecode.object.length - 2) / 2,
+    runtimeBytecodeBytes: (runtimeCode.length - 2) / 2,
+    creationBytecodeKeccak256: keccak256(artifact.bytecode.object),
+    runtimeBytecodeKeccak256: keccak256(runtimeCode),
+    contractWriteTransactions: 12,
+    uiWriteTransactions: 7,
+    supplementalRpcWriteTransactions: 5,
+    rejectedAuthorizationSimulations: 2,
     results,
     pageErrors: errors,
   };
+  await mkdir("../docs/iteration-6", { recursive: true });
   await writeFile(
-    "../docs/iteration-5/anvil-results.json",
+    "../docs/iteration-6/anvil-results.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(JSON.stringify(report, null, 2));
