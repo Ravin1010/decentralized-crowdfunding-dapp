@@ -650,3 +650,164 @@ test("unreadable configured deployment blocks creation before a wallet write", a
   await expect(page.getByRole("alert")).toBeVisible();
   expect(state.submitted).toHaveLength(0);
 });
+
+test("create another resets only after confirmation and refresh and requires a fresh submit", async ({
+  page,
+}) => {
+  const { state, mine } = await transactionFixture(page);
+  await page.goto(liveUrl + "/create");
+  await page
+    .getByRole("button", { name: "Create Campaign", exact: true })
+    .click();
+  await expect(page.locator("[aria-invalid=true]")).toHaveCount(3);
+  await fillCreate(page);
+  await page.locator("#duration").fill("7");
+  await connect(page);
+  await page
+    .getByRole("button", { name: "Create Campaign", exact: true })
+    .dblclick();
+  await expect(
+    page.getByText("Transaction submitted. Waiting for confirmation.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Create another campaign", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Create Campaign", exact: true }),
+  ).toBeDisabled();
+  expect(state.submitted).toHaveLength(1);
+  state.refreshDelay = 800;
+  mine();
+  await expect(
+    page.getByText("Transaction confirmed. Loading the latest data…", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Create another campaign", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "View created campaign #2", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("#title")).toHaveValue(
+    "A confirmed community room",
+  );
+  await page
+    .getByRole("button", { name: "Create another campaign", exact: true })
+    .click();
+  await expect(page.locator("#title")).toHaveValue("");
+  await expect(page.locator("#description")).toHaveValue("");
+  await expect(page.locator("#goal")).toHaveValue("");
+  await expect(page.locator("#duration")).toHaveValue("14");
+  await expect(page.locator("#title")).toBeFocused();
+  await expect(page.locator("[aria-invalid=true]")).toHaveCount(0);
+  await expect(page.locator(".field-error")).toHaveCount(0);
+  await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: /View created campaign/ }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Create Campaign", exact: true }),
+  ).toBeEnabled();
+  expect(state.submitted).toHaveLength(1);
+  await fillCreate(page);
+  await page.locator("#title").fill("A separately submitted second campaign");
+  expect(state.submitted).toHaveLength(1);
+  await page
+    .getByRole("button", { name: "Create Campaign", exact: true })
+    .dblclick();
+  await expect(
+    page.getByText("Transaction submitted. Waiting for confirmation.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(state.submitted).toHaveLength(2);
+});
+
+test("create another stays unavailable when a confirmed creation refresh fails", async ({
+  page,
+}) => {
+  const { state, mine } = await transactionFixture(page);
+  await page.goto(liveUrl + "/create");
+  await fillCreate(page);
+  await connect(page);
+  await page
+    .getByRole("button", { name: "Create Campaign", exact: true })
+    .click();
+  await expect(
+    page.getByText("Transaction submitted. Waiting for confirmation.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  state.refreshFails = true;
+  mine();
+  await expect(
+    page.getByText(
+      "Transaction confirmed, but the latest campaign data could not be loaded.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Create another campaign", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Create Campaign", exact: true }),
+  ).toBeDisabled();
+  expect(state.submitted).toHaveLength(1);
+  state.refreshFails = false;
+  await page
+    .getByRole("button", { name: "Retry data refresh", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Create another campaign", exact: true }),
+  ).toBeVisible();
+  expect(state.submitted).toHaveLength(1);
+});
+
+test("refund confirmation distinguishes refresh progress failure and verified success", async ({
+  page,
+}) => {
+  const { state, mine } = await transactionFixture(page, { status: 2 });
+  await page.goto(liveUrl + "/campaigns/1");
+  await connect(page);
+  await page.getByRole("button", { name: "Claim Refund", exact: true }).click();
+  await expect(
+    page.getByText("Transaction submitted. Waiting for confirmation.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  state.refreshDelay = 800;
+  state.refreshFails = true;
+  mine();
+  const feedback = page.locator(".transaction-feedback");
+  await expect(feedback).toContainText(
+    "Refund confirmed. Checking the latest contribution record…",
+  );
+  await expect(feedback).not.toContainText(
+    "your refreshed contribution record",
+  );
+  await expect(feedback).toContainText(
+    "Refund confirmed, but the latest contribution record could not be loaded.",
+  );
+  await expect(feedback).not.toContainText(
+    "your refreshed contribution record",
+  );
+  expect(state.submitted).toHaveLength(1);
+  state.refreshFails = false;
+  await page
+    .getByRole("button", { name: "Retry data refresh", exact: true })
+    .click();
+  await expect(feedback).toContainText(
+    "Checking the latest contribution record…",
+  );
+  await expect(feedback).not.toContainText(
+    "your refreshed contribution record",
+  );
+  await expect(feedback).toContainText(
+    "Refund confirmed. Eligibility comes from your refreshed contribution record.",
+  );
+  await expect(page.locator(".wallet-contribution strong")).toHaveText("0 ETH");
+  expect(state.submitted).toHaveLength(1);
+});

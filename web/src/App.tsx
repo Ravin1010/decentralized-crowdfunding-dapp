@@ -470,6 +470,19 @@ function Create() {
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [reviewed, setReviewed] = useState(false);
   const result = useRef<HTMLDivElement>(null);
+  function createAnother() {
+    if (
+      transaction.state.phase !== "confirmed" ||
+      !transaction.state.refreshed ||
+      transaction.state.refreshing
+    )
+      return;
+    transaction.reset();
+    setValues({ title: "", description: "", goal: "", duration: "14" });
+    setErrors({});
+    setReviewed(false);
+    requestAnimationFrame(() => document.getElementById("title")?.focus());
+  }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const next: typeof errors = {};
@@ -663,6 +676,14 @@ function Create() {
             </p>
           </div>
           {live && <TransactionFeedback transaction={transaction} />}
+          {live &&
+            transaction.state.phase === "confirmed" &&
+            transaction.state.refreshed &&
+            !transaction.state.refreshing && (
+              <button type="button" className="button" onClick={createAnother}>
+                Create another campaign
+              </button>
+            )}
           {reviewed && !live && (
             <div
               ref={result}

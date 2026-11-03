@@ -62,8 +62,11 @@ export function TransactionFeedback({
       {state.phase === "confirmed" &&
         state.context?.operation.kind === "claimRefund" && (
           <p>
-            Refund confirmed. Eligibility comes from your refreshed contribution
-            record.
+            {state.refreshing
+              ? "Refund confirmed. Checking the latest contribution record…"
+              : state.refreshed
+                ? "Refund confirmed. Eligibility comes from your refreshed contribution record."
+                : "Refund confirmed, but the latest contribution record could not be loaded."}
           </p>
         )}
       {state.eventMissing && (

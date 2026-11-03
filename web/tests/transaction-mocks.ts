@@ -73,6 +73,7 @@ export async function transactionFixture(
     applied: false,
     receiptUnavailable: false,
     refreshFails: false,
+    refreshDelay: 0,
     contractUnavailable: false,
     signatureDelay: 0,
     reject: false,
@@ -242,7 +243,7 @@ export async function transactionFixture(
           "access-control-allow-headers": "content-type",
         },
       });
-    const respond = (request: {
+    const respond = async (request: {
       id: number;
       method: string;
       params: unknown[];
@@ -256,6 +257,10 @@ export async function transactionFixture(
           result = rpcBlock(state.block, state.now);
         else if (request.method === "eth_call") {
           apply();
+          if (state.applied && state.refreshDelay)
+            await new Promise((resolve) =>
+              setTimeout(resolve, state.refreshDelay),
+            );
           const { data } = request.params[0] as { data: Hex };
           if (data.startsWith("0x82ad56cb")) {
             const decoded = decodeFunctionData({ abi: multicall3Abi, data });
@@ -327,7 +332,9 @@ export async function transactionFixture(
     };
     const payload = route.request().postDataJSON();
     await route.fulfill({
-      json: Array.isArray(payload) ? payload.map(respond) : respond(payload),
+      json: Array.isArray(payload)
+        ? await Promise.all(payload.map(respond))
+        : await respond(payload),
       headers: { "access-control-allow-origin": "*" },
     });
   });
