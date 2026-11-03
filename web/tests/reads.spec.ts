@@ -75,7 +75,9 @@ test("live detail displays exact wei, metadata, creator and withdrawal separatel
   await expect(page.getByText("What the funding makes possible")).toHaveCount(
     0,
   );
-  await expect(page.locator(".funding-panel > button")).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Withdraw Funds", exact: true }),
+  ).toHaveCount(0);
 });
 test("fully funded is Active awaiting deadline and cannot overstate percentage", async ({
   page,

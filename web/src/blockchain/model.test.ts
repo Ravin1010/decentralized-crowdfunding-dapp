@@ -90,10 +90,13 @@ describe("contract model and configuration", () => {
     expect(
       readConfiguration(address, "http://127.0.0.1:18545").error,
     ).toBeUndefined());
-  it("exposes only actual read ABI and custom error", () => {
+  it("preserves the actual contract read interfaces", () => {
     expect(
       crowdfundingAbi
-        .filter((entry) => entry.type === "function")
+        .filter(
+          (entry) =>
+            entry.type === "function" && entry.stateMutability === "view",
+        )
         .map((entry) => entry.name)
         .sort(),
     ).toEqual([
@@ -104,7 +107,10 @@ describe("contract model and configuration", () => {
     ]);
     expect(
       crowdfundingAbi
-        .filter((entry) => entry.type === "function")
+        .filter(
+          (entry) =>
+            entry.type === "function" && entry.stateMutability === "view",
+        )
         .every((entry) => entry.stateMutability === "view"),
     ).toBe(true);
   });

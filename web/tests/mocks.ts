@@ -215,6 +215,24 @@ export async function mockWallet(
         }) {
           calls.push(method);
           persist();
+          if (method === "eth_sendTransaction") {
+            const result = await (
+              window as unknown as {
+                testSendTransaction: (
+                  transaction: unknown,
+                ) => Promise<{
+                  hash?: string;
+                  error?: { code: number; message: string; data?: string };
+                }>;
+              }
+            ).testSendTransaction(params![0]);
+            if (result.error)
+              throw Object.assign(
+                new Error(result.error.message),
+                result.error,
+              );
+            return result.hash;
+          }
           if (method === "eth_accounts") {
             if (silentUnavailable)
               throw Object.assign(new Error("Wallet unavailable"), {

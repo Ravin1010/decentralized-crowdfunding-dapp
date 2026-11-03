@@ -3,7 +3,9 @@ import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { eth, remaining, snapshot } from "./campaigns";
 import type { Campaign } from "./campaigns";
-import { parseEther } from "viem";
+import { CampaignActions, TransactionFeedback } from "./Transactions";
+import { useCrowdfundingTransaction } from "./blockchain/transactions";
+import { parsePositiveEth, parseDays } from "./blockchain/transaction-model";
 import { Wallet } from "./Wallet";
 import { contractConfig } from "./blockchain/config";
 import {
@@ -52,7 +54,7 @@ function Footer() {
       <div className="container footer-inner">
         <Brand />
         <p>Good ideas move forward, together.</p>
-        <span>Read-only · No transactions enabled</span>
+        <span>Sepolia crowdfunding · Wallet actions are explicit</span>
         <a href="/campaigns">
           Explore <Arrow />
         </a>
@@ -64,11 +66,11 @@ function DemoNote() {
   if (contractConfig.mode === "live")
     return (
       <div className="demo-note live-context">
-        <span className="demo-label">SEPOLIA · READ ONLY</span>
+        <span className="demo-label">SEPOLIA</span>
         <span>
           Contract <code>{contractConfig.address}</code>
           <br />
-          Chain 11155111 · Public RPC reads · No transactions enabled
+          Chain 11155111 · Public browsing · Explicit wallet actions
         </span>
       </div>
     );
@@ -214,7 +216,7 @@ function Home() {
               <br />A community that makes the difference.
             </p>
             <span className="small">
-              Financial actions will be available in Iteration 5.
+              Funding and settlement follow the campaign’s contract rules.
             </span>
           </div>
           <ol className="steps">
@@ -328,14 +330,14 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
   const full = remaining(c) === 0n;
   const message =
     c.status === "Cancelled"
-      ? "Cancelled by the creator before the deadline. Contributors would be able to claim their own refunds."
+      ? "Cancelled by the creator before the deadline. Contributors can claim their own refunds."
       : c.status === "Failed"
-        ? "The deadline passed without reaching the goal. Contributors would be able to claim their own refunds."
+        ? "The deadline passed without reaching the goal. Contributors can claim their own refunds."
         : c.status === "Successful"
           ? "The goal was met and the deadline has passed. The creator can withdraw once under the contract rules, unless already withdrawn."
           : full
             ? "The goal is met. This campaign remains Active until its deadline; further contributions are closed."
-            : "The campaign is accepting funding under its contract rules. Transactions are unavailable in this read-only checkpoint.";
+            : "The campaign is accepting funding under its contract rules. Contributions are capped at the remaining goal.";
   return (
     <div className="container page detail-page">
       <a className="back-link" href="/campaigns">
@@ -431,30 +433,19 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
             </strong>
             <p>{message}</p>
           </div>
-          {c.status === "Active" && !full && (
-            <div className="contribution-preview">
-              <label htmlFor="contribution">Contribution amount (ETH)</label>
-              <input
-                id="contribution"
-                type="number"
-                placeholder="0.00"
-                disabled
-                aria-describedby="contribution-help"
-              />
-              <span className="small" id="contribution-help">
-                Maximum contribution: {eth(remaining(c))} ETH
-              </span>
-            </div>
+          {c.mode === "live" ? (
+            <CampaignActions campaign={c} />
+          ) : (
+            <>
+              <button className="button primary full-width" disabled>
+                Demo only · No transactions
+              </button>
+              <p className="small panel-note">
+                Fictional campaigns cannot receive contributions or other
+                transactions.
+              </p>
+            </>
           )}
-          <button className="button primary full-width" disabled>
-            {c.status === "Active" && !full
-              ? "Contribute ETH · unavailable"
-              : "Contributions closed"}
-          </button>
-          <p className="small panel-note">
-            Read-only checkpoint. Contributions, withdrawals, refunds and
-            cancellation are unavailable until Iteration 5.
-          </p>
           {c.mode === "live" && (
             <WalletContribution campaignId={BigInt(c.id)} />
           )}
@@ -468,6 +459,8 @@ function Detail({ campaign: c }: { campaign: Campaign }) {
 }
 type Field = "title" | "description" | "goal" | "duration";
 function Create() {
+  const transaction = useCrowdfundingTransaction();
+  const live = contractConfig.mode === "live";
   const [values, setValues] = useState({
     title: "",
     description: "",
@@ -484,24 +477,27 @@ function Create() {
     if (!values.description.trim())
       next.description = "Tell people about your project.";
     try {
-      if (
-        parseEther(values.goal) <= 0n ||
-        !/^\d+(\.\d{1,18})?$/.test(values.goal)
-      )
-        throw new Error();
+      if (parsePositiveEth(values.goal) <= 0n) throw new Error();
     } catch {
       next.goal = "Enter a positive ETH amount with up to 18 decimal places.";
     }
-    if (
-      !Number.isInteger(Number(values.duration)) ||
-      Number(values.duration) < 1 ||
-      Number(values.duration) > 30
-    )
+    try {
+      parseDays(values.duration);
+    } catch {
       next.duration = "Choose a whole number from 1 to 30 days.";
+    }
     setErrors(next);
     setReviewed(Object.keys(next).length === 0);
     if (Object.keys(next).length)
       document.getElementById(Object.keys(next)[0])?.focus();
+    else if (live)
+      void transaction.submit({
+        kind: "createCampaign",
+        title: values.title.trim(),
+        description: values.description.trim(),
+        goal: parsePositiveEth(values.goal),
+        duration: parseDays(values.duration),
+      });
     else requestAnimationFrame(() => result.current?.focus());
   }
   return (
@@ -544,15 +540,21 @@ function Create() {
             </p>
             <p>
               If the campaign fails or is cancelled, contributors can claim
-              refunds once integration is available.
+              refunds individually under the contract rules.
             </p>
           </div>
         </div>
         <form className="create-form" onSubmit={submit} noValidate>
           <div className="form-heading">
-            <span className="demo-label">PROTOTYPE FORM</span>
+            <span className="demo-label">
+              {live ? "SEPOLIA CAMPAIGN" : "PROTOTYPE FORM"}
+            </span>
             <h2>Your campaign, at a glance.</h2>
-            <p>Try the form locally. Nothing is published or saved.</p>
+            <p>
+              {live
+                ? "Publishing requires your explicit approval and a confirmed transaction."
+                : "Try the form locally. Nothing is published or saved."}
+            </p>
           </div>
           {(["title", "description", "goal", "duration"] as Field[]).map(
             (field) => {
@@ -569,13 +571,14 @@ function Create() {
                   "Explain the idea, who it helps and how the funds will be used. Up to 3,000 characters.",
                 goal: "Native ETH only. Choose an amount greater than zero.",
                 duration:
-                  "Choose 1–30 whole days. The contract will support 60 seconds to 30 days.",
+                  "Choose 1–30 whole days. The contract supports 60 seconds to 30 days.",
               };
               const props = {
                 id: field,
                 name: field,
                 value: values[field],
                 required: true,
+                disabled: live && transaction.busy,
                 "aria-invalid": !!errors[field],
                 "aria-describedby": `${field}-help${errors[field] ? ` ${field}-error` : ""}`,
                 onChange: (
@@ -643,18 +646,24 @@ function Create() {
             },
           )}
           <div className="form-submit">
-            <button type="submit" className="button primary full-width">
-              Review demo campaign{" "}
+            <button
+              type="submit"
+              className="button primary full-width"
+              disabled={live && transaction.busy}
+            >
+              {live ? "Create Campaign" : "Review demo campaign"}{" "}
               <span>
                 <Arrow direction="right" />
               </span>
             </button>
             <p className="small">
-              Local validation only. Publishing will require a connected wallet
-              and a confirmed contract transaction in a future iteration.
+              {live
+                ? "Connect your wallet first, then submit separately. A hash is not confirmation. Pending tracking lasts only for this page session."
+                : "Local validation only. No campaign is published in demo mode."}
             </p>
           </div>
-          {reviewed && (
+          {live && <TransactionFeedback transaction={transaction} />}
+          {reviewed && !live && (
             <div
               ref={result}
               tabIndex={-1}
