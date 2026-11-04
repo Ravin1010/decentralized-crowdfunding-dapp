@@ -518,12 +518,20 @@ for (const change of ["changeAccount", "changeChain", "disconnect"] as const) {
       );
     else
       await expect(page.locator(".wallet-contribution strong")).toHaveCount(0);
-    mine();
     await expect(
-      page.getByText("Transaction confirmed and latest data loaded.", {
-        exact: true,
-      }),
-    ).toBeVisible();
+      page.getByRole("button", { name: "Contribute ETH", exact: true }),
+    ).toBeDisabled();
+    expect(state.submitted).toHaveLength(1);
+    mine();
+    if (change === "changeAccount") {
+      // Original context survives pending confirmation, then completed work is released.
+      await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Contribute ETH", exact: true })).toBeEnabled();
+    } else {
+      await expect(
+        page.getByText("Transaction confirmed and latest data loaded.", { exact: true }),
+      ).toBeVisible();
+    }
     expect(state.submitted).toHaveLength(1);
     if (change === "changeAccount")
       await expect(page.locator(".wallet-contribution strong")).toHaveText(
@@ -842,3 +850,122 @@ test("pending navigation and reload never resend or invent transaction outcomes"
   expect((await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method))).toHaveLength(permissions);
   await expect(page.locator(".transaction-feedback")).toHaveCount(0);
 });
+
+
+test("completed creator cancellation releases only after switching wallets, then refunds the current contributor", async ({ page }) => {
+  const { state, mine } = await transactionFixture(page);
+  await page.goto(liveUrl + "/campaigns/1");
+  await connect(page);
+  await page.getByRole("button", { name: "Cancel Campaign", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm cancellation", exact: true }).click();
+  await expect(page.getByText("Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+  mine();
+  await expect(page.getByText("Transaction confirmed and latest data loaded.", { exact: true })).toBeVisible();
+  // The submitting wallet still needs the existing explicit reset action.
+  await expect(page.getByRole("button", { name: "Claim Refund", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Choose another action", exact: true })).toBeVisible();
+  const permissions = (await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method));
+  await walletEvent(page, "changeAccount");
+  await expect(page.locator(".wallet-contribution strong")).toHaveText("0.75 ETH");
+  await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+  const refund = page.getByRole("button", { name: "Claim Refund", exact: true });
+  await expect(refund).toBeEnabled();
+  expect(state.submitted).toHaveLength(1);
+  expect((await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method))).toEqual(permissions);
+  state.signatureDelay = 400;
+  await refund.dblclick();
+  await expect(page.getByText("Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+  expect(state.submitted).toHaveLength(2);
+  expect(state.submitted[1].from.toLowerCase()).toBe(accountB);
+  expect(decodeFunctionData({ abi: crowdfundingAbi, data: state.submitted[1].data }).functionName).toBe("claimRefund");
+  await expect(page.locator(".transaction-feedback")).toContainText("0xbBbB…BBbB");
+  await expect(page.locator(".transaction-feedback")).not.toContainText("0xaAaA…aaAa");
+  await expect(page.locator(".wallet-contribution strong")).toHaveText("0.75 ETH");
+  await expect(refund).toBeDisabled();
+  mine();
+  await expect(page.getByText("Refund confirmed. Eligibility comes from your refreshed contribution record.")).toBeVisible();
+  await expect(page.locator(".wallet-contribution strong")).toHaveText("0 ETH");
+  await expect(refund).toHaveCount(0);
+  await expect(page.locator(".raised-large")).toContainText("1 ETH");
+  expect(state.submitted).toHaveLength(2);
+  expect((await walletCalls(page)).filter((method) => method === "eth_sendTransaction")).toHaveLength(2);
+  expect((await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method))).toEqual(permissions);
+});
+
+for (const refreshFailure of [false, true]) {
+  test(`wallet switch keeps confirmed cancellation locked until refresh succeeds (failure: ${refreshFailure})`, async ({ page }) => {
+    const { state, mine } = await transactionFixture(page);
+    await page.goto(liveUrl + "/campaigns/1");
+    await connect(page);
+    await page.getByRole("button", { name: "Cancel Campaign", exact: true }).click();
+    await page.getByRole("button", { name: "Confirm cancellation", exact: true }).click();
+    await expect(page.getByText("Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+    state.refreshFails = refreshFailure;
+    state.refreshDelay = refreshFailure ? 0 : 1200;
+    mine();
+    await expect(page.getByText(refreshFailure
+      ? "Transaction confirmed, but the latest campaign data could not be loaded."
+      : "Transaction confirmed. Loading the latest data…", { exact: true })).toBeVisible();
+    await walletEvent(page, "changeAccount");
+    await expect(page.locator(".transaction-feedback")).toContainText("0xaAaA…aaAa");
+    await expect(page.locator(".transaction-feedback code").last()).toHaveText("0x" + "ab".repeat(32));
+    await expect(page.getByRole("button", { name: "Choose another action", exact: true })).toHaveCount(0);
+    const refund = page.getByRole("button", { name: "Claim Refund", exact: true });
+    // Public polling cannot bypass a failed transaction-specific refresh.
+    if (refreshFailure) {
+      state.refreshFails = false;
+      await page.getByRole("button", { name: "Refresh public data" }).click();
+      await expect(page.locator(".wallet-contribution strong")).toHaveText("0.75 ETH");
+      await expect(refund).toBeDisabled();
+      expect(state.submitted).toHaveLength(1);
+      await page.getByRole("button", { name: "Retry data refresh", exact: true }).click();
+    }
+    await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+    await expect(refund).toBeEnabled();
+    expect(state.submitted).toHaveLength(1);
+  });
+}
+
+
+for (const phase of ["signature", "unresolved receipt"] as const) {
+  test(`wallet switching cannot unlock pending ${phase} or duplicate its submission`, async ({ page }) => {
+    if (phase === "unresolved receipt") await page.clock.install();
+    const { state, mine } = await transactionFixture(page);
+    state.signatureDelay = phase === "signature" ? 1500 : 0;
+    state.receiptUnavailable = phase === "unresolved receipt";
+    await page.goto(liveUrl + "/campaigns/1");
+    await connect(page);
+    await page.getByLabel("Contribution amount (ETH)").fill("0.5");
+    await page.getByRole("button", { name: "Contribute ETH", exact: true }).click();
+    await expect(page.getByText(phase === "signature"
+      ? "Confirm this transaction in MetaMask."
+      : "Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+    if (phase === "unresolved receipt") {
+      await expect.poll(() => state.receiptReads).toBeGreaterThan(0);
+      await page.clock.fastForward(31_000);
+      await expect(page.getByText(/Confirmation is not yet available/)).toBeVisible();
+    }
+    const permissions = (await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method));
+    await walletEvent(page, "changeAccount");
+    await expect(page.locator(".wallet-contribution strong")).toHaveText("0.75 ETH");
+    await expect(page.locator(".transaction-feedback")).toContainText("0xaAaA…aaAa");
+    await expect(page.getByRole("button", { name: "Contribute ETH", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Choose another action", exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Refresh public data" }).click();
+    expect(state.submitted).toHaveLength(1);
+    await expect(page.locator(".raised-large")).toContainText("1 ETH");
+    if (phase === "signature") {
+      await expect(page.getByText("Transaction submitted. Waiting for confirmation.", { exact: true })).toBeVisible();
+    } else {
+      await expect(page.locator(".transaction-hash code")).toHaveText("0x" + "ab".repeat(32));
+      state.receiptUnavailable = false;
+    }
+    mine();
+    if (phase === "unresolved receipt")
+      await page.getByRole("button", { name: "Check confirmation", exact: true }).click();
+    await expect(page.locator(".transaction-feedback")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Contribute ETH", exact: true })).toBeEnabled();
+    expect(state.submitted).toHaveLength(1);
+    expect((await walletCalls(page)).filter((method) => /requestAccounts|requestPermissions/.test(method))).toEqual(permissions);
+  });
+}

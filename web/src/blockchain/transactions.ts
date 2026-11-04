@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useConfig, usePublicClient } from "wagmi";
+import { useConfig, useConnection, usePublicClient } from "wagmi";
 import { getConnection, getWalletClient } from "wagmi/actions";
 import { hashFn, readContractQueryOptions } from "wagmi/query";
 import { encodeFunctionData, toHex, type Hash } from "viem";
@@ -17,12 +17,37 @@ import {
 
 export function useCrowdfundingTransaction() {
   const config = useConfig();
+  const { address, isConnected } = useConnection();
   const client = usePublicClient({ chainId: deployment.chainId });
   const queries = useQueryClient();
   const [state, setState] = useState<TransactionState>({ phase: "idle" });
   const locked = useRef(false);
   const checking = useRef(false);
   const confirmed = useRef<TransactionState | undefined>(undefined);
+
+  // Both manual reset and account changes may release only settled, refreshed work.
+  const reset = useCallback(() => {
+    if (
+      state.phase === "confirmed" &&
+      state.refreshed &&
+      !state.refreshing &&
+      !checking.current
+    ) {
+      confirmed.current = undefined;
+      locked.current = false;
+      setState({ phase: "idle" });
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (
+      isConnected &&
+      address &&
+      state.context &&
+      address.toLowerCase() !== state.context.account.toLowerCase()
+    )
+      reset();
+  }, [address, isConnected, state.context, reset]);
 
   async function refresh(context: Submission, id?: bigint) {
     const predicate = (q: { queryKey: readonly unknown[] }) =>
@@ -333,12 +358,6 @@ export function useCrowdfundingTransaction() {
     checkConfirmation: () =>
       state.context?.hash &&
       observe({ ...state.context, hash: state.context.hash }),
-    reset: () => {
-      if (state.phase === "confirmed" && state.refreshed) {
-        confirmed.current = undefined;
-        locked.current = false;
-        setState({ phase: "idle" });
-      }
-    },
+    reset,
   };
 }
