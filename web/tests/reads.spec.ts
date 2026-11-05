@@ -379,6 +379,9 @@ test("responsive demo and live pages preserve layout, keyboard access, and scree
     await walletEvent(page, "changeChain", "0xaa36a7");
   }
   await page.goto(demoUrl + "/");
+  // Navigation can finish before React commits the skip link and its target.
+  await expect(page.locator(".skip-link")).toBeAttached();
+  await expect(page.locator("main#main")).toBeAttached();
   await page.keyboard.press("Tab");
   await expect(page.locator(".skip-link")).toBeFocused();
   await page.emulateMedia({ reducedMotion: "reduce" });
