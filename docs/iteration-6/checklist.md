@@ -1,10 +1,10 @@
-# Deployment and acceptance checklist — 6D handoff
+# Deployment and acceptance checklist — 6E follow-up
 
-**Final comprehensive production acceptance remains pending independent review.** This is the current checklist, consolidating later live lifecycle and persistent-hosting evidence without rewriting the historical 6A/6B documents. See [6D live evidence](live-lifecycle-evidence-6d.md) for the seven transaction records, exact provenance, hosting/hotfix findings and remaining limits.
+**Final comprehensive production acceptance remains pending independent review.** This current checklist adds independently verified post-withdrawal state, Vercel API deployment-to-source provenance and public withdrawn-state UI evidence. See [6E acceptance follow-up](acceptance-followup-6e.md) for exact values/methods, and [historical 6D live evidence](live-lifecycle-evidence-6d.md) for the seven lifecycle transactions. The getter, withdrawn UI and production provenance checks were pending at 6D; that document and 6A/6B records remain unchanged.
 
 **Historical boundary:** no public deployment occurred in 6A. The [6B evidence document](deployment-evidence-6b.md) records the later authorized deployment, original Codex HTTP 403 access limitation, subsequent independent Blockscout verification and separate user-supplied Foundry/Etherscan output. Its Codespaces observations and no-crowdfunding-transactions statement describe those earlier checks, not the later 6D lifecycle evidence.
 
-**6D access limit:** all seven Blockscout API transaction reads and seven Etherscan page fallbacks were attempted but inaccessible through the web reader. Production homepage/list/create/detail reads were also inaccessible; normal Blockscout/Vercel HTTPS probes returned HTTP 403 at CONNECT. The supplied prior independent-review findings are preserved, not presented as fresh successful rechecks by this agent. Repository/PR merge metadata was independently checked. This checkpoint authorizes no deployment, transaction or signature.
+**Historical 6D access limit:** all seven Blockscout API transaction reads and seven Etherscan page fallbacks were attempted but inaccessible through the web reader. Production homepage/list/create/detail reads were also inaccessible; normal Blockscout/Vercel HTTPS probes returned HTTP 403 at CONNECT. The supplied prior independent-review findings are preserved, not presented as fresh successful rechecks by this agent. Repository/PR merge metadata was independently checked during 6D. Later 6E Vercel API and rendered-page reads succeeded as recorded below; this does not rewrite the earlier access failure. This checkpoint authorizes no deployment, transaction or signature.
 
 ## Historical 6B preparation and deployment provenance
 
@@ -36,8 +36,8 @@
 | Source verification | [Sepolia Etherscan verified source](https://sepolia.etherscan.io/address/0x8627ffb5768CF5E47965E55F6855f8910b474A25#code), **“Pass - Verified”** — user-supplied Foundry output; no direct independent reviewer Etherscan-status recheck |
 | Initial `campaignCount()` | **0** — user-supplied initial read, not an independently fetched current value |
 | Public RPC / browser checks | At 6B, wallet-free reads and Sepolia recognition passed in Codespaces — user-attested. Later independent public-page access is recorded in 6D; broader browser/RPC/CORS checks remain incomplete. |
-| Current frontend hosting | Persistent Vercel production hostname: [decentralized-crowdfunding-dapp.vercel.app](https://decentralized-crowdfunding-dapp.vercel.app). Supplied independent page-access findings; Codespaces was the earlier temporary preview, not current production hosting. |
-| Source versus deployed build provenance | Accepted GitHub main: `4a38309ce6aa42990dbef2fe84c0022f193c3913`. Immutable Vercel production build SHA is not independently established; do not equate the two. No configuration changed by this documentation PR. |
+| Current frontend hosting | [decentralized-crowdfunding-dapp.vercel.app](https://decentralized-crowdfunding-dapp.vercel.app) — production alias independently resolved via connected Vercel API in 6E; public Campaign #2 rendered-page data also loaded. Codespaces was the historical temporary preview. |
+| Vercel API deployment-to-source provenance | Project `prj_sVG75ZF0tWyEsMXDKcd7RTxGnJU7`, production deployment `dpl_DcA7fkgm8FJU1PRDEzemuNT5BQu6`, **READY**; API source `Ravin1010/decentralized-crowdfunding-dapp`, branch `main`, recorded Git commit `ab9a127ad0383681a61974339ba55dd42790c385`. Lookup by hostname and deployment ID returned the same deployment. This is API provenance, not cryptographic verification of built JavaScript assets. See [6E methods](acceptance-followup-6e.md#vercel-api-deployment-to-source-provenance). |
 
 Public reviewer references: [Blockscout transaction API](https://eth-sepolia.blockscout.com/api/v2/transactions/0xfec76744a082b6455d0cde1b18310d7c7657b05a7bc4eed78b5dfd848412560d), [contract API](https://eth-sepolia.blockscout.com/api/v2/smart-contracts/0x8627ffb5768CF5E47965E55F6855f8910b474A25), [block API](https://eth-sepolia.blockscout.com/api/v2/blocks/12053283).
 
@@ -54,7 +54,7 @@ The [Ethereum Foundation announcement](https://blog.ethereum.org/2026/10/16/glam
 ## Completed 6D evidence
 
 - [x] Campaign #1 **SEP QA - Cancel and Refund**: create → 0.0001 ETH contribution → cancel → individual 0.0001 ETH refund; **supplied independent Blockscout verification**, not a fresh workspace recheck. Status Cancelled, historical raised **0.0001 ETH**, reported post-refund contract balance **0 ETH**.
-- [x] Campaign #2 **SEP QA - Successful Withdrawal**: create → exact 0.0001 ETH goal → deadline passes → 0.0001 ETH withdrawal to creator A; **supplied independent Blockscout verification**. Successful after deadline, withdrawal three minutes later, reported post-withdrawal contract balance **0 ETH**. Direct post-withdrawal getter/UI assertions remain open below.
+- [x] Campaign #2 **SEP QA - Successful Withdrawal**: create → exact 0.0001 ETH goal → deadline passes → 0.0001 ETH withdrawal to creator A; **supplied independent Blockscout verification**. Successful after deadline, withdrawal three minutes later, reported post-withdrawal contract balance **0 ETH**. Those getter/UI checks were pending during 6D; later 6E verifies the getters and public UI below, while creator-connected UI verification remains open.
 - [x] Persistent frontend hostname and independent public access to homepage/list/create/details recorded: **[production Vercel frontend](https://decentralized-crowdfunding-dapp.vercel.app)** — supplied independent-review findings. Current hosting is no longer only a temporary Codespaces preview.
 - [x] [PR #8 SPA routing](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/pull/8), accepted squash `c4dfdf1ce9450e11dc0c581d9094d48de747d262`, and [PR #9 hotfix](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/pull/9), accepted squash `4a38309ce6aa42990dbef2fe84c0022f193c3913`: merge metadata independently confirmed via GitHub.
 - [x] Original PR #9 CI: **57 unit tests, 70 browser scenarios, 43 Foundry tests passed** — automated mock/local verification, separate from live blockchain findings; [frontend run](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/41787627983), [Foundry run](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/41787627980).
@@ -62,7 +62,7 @@ The [Ethereum Foundation announcement](https://blog.ethereum.org/2026/10/16/glam
 
 ### Live lifecycle transaction evidence
 
-All seven hashes/events/blocks below were previously independently checked through Sepolia Blockscout per the supplied review record. Links are public references; current fresh access failed as recorded above. Wallet A (creator): `0x4A779fA7d5eA106f1aDFB8369e65fCAA465ca7Fd`; wallet B (contributor): `0x890F63435Cf6F4D526F7062A282A94c74A50cFa3`.
+All seven hashes/events/blocks below were previously independently checked through Sepolia Blockscout per the supplied review record. Links are public references; fresh explorer access failed during 6D as recorded above. Later 6E getter evidence is a separate subsequent read. Wallet A (creator): `0x4A779fA7d5eA106f1aDFB8369e65fCAA465ca7Fd`; wallet B (contributor): `0x890F63435Cf6F4D526F7062A282A94c74A50cFa3`.
 
 | Campaign / action | Transaction / explorer | Block | Event / amount |
 | --- | --- | --- | --- |
@@ -76,26 +76,44 @@ All seven hashes/events/blocks below were previously independently checked throu
 
 Campaign #2 was created **November 4, 2026, 3:13:36 PM MYT**, with deadline **November 5, 2026, 3:13:36 PM MYT**; withdrawal confirmed **November 5, 2026, 3:16:36 PM MYT** (**180 seconds after deadline**). Full funding before deadline remains Active; Successful is determined after deadline.
 
-Refund/withdrawal settlement must not erase historical raised. Successful-campaign contribution records are historical records, not automatically refundable balances. No fresh post-withdrawal getter was obtained here. No duplicate refund or second withdrawal attempt is recorded or claimed.
+Refund/withdrawal settlement must not erase historical raised. Successful-campaign contribution records are historical records, not automatically refundable balances. At 6D, direct post-withdrawal getters were not independently recorded; subsequent independent Read Contract results are now documented in 6E below. No duplicate refund or second withdrawal attempt is recorded or claimed.
+
+## Completed 6E acceptance evidence
+
+- [x] **Post-withdrawal `getCampaign(2)`** independently verified through Sepolia Blockscout's **Read Contract** interface — [independent verification run](https://agent.tinyfish.ai/runs/536c1ec8-82f1-44ac-9ea6-d3a42a2e31cb), [exact getter table](acceptance-followup-6e.md#post-withdrawal-contract-state--campaign-2).
+- [x] **`getCampaignStatus(2) = 1`** and **`contributions(2, 0x890F63435Cf6F4D526F7062A282A94c74A50cFa3) = 100000000000000` wei** independently verified in that same supplied read-only record. Successful historical contributions remain recorded and are **not refundable balances**.
+- [x] **Vercel production alias → deployment → recorded Git source** independently verified via connected API and corroborated again in 6E by lookups using deployment ID and production hostname; exact fields above and [6E provenance](acceptance-followup-6e.md#vercel-api-deployment-to-source-provenance). No configuration/deployment action; **no built-JavaScript cryptographic hash verification claimed**.
+- [x] **Public withdrawn-state frontend**, no connected wallet: **Successful**, exact message **“Successfully withdrawn”**, no **Withdraw Funds** button, public data loaded, no visible loading/error state — [independent browser run](https://agent.tinyfish.ai/runs/f68cbd7b-fa10-4801-8f67-4a1c23ac8dd0), [production Campaign #2](https://decentralized-crowdfunding-dapp.vercel.app/campaigns/2). A fresh rendered-HTML read in 6E corroborated these public indicators and disconnected controls. This does **not** complete a creator-connected MetaMask assertion.
+
+| `getCampaign(2)` field | Independently verified result |
+| --- | --- |
+| `creator` | `0x4A779fA7d5eA106f1aDFB8369e65fCAA465ca7Fd` |
+| `title` | `SEP QA - Successful Withdrawal` |
+| `goal` | `100000000000000` wei |
+| `deadline` | `1793862816` Unix seconds |
+| `amountRaised` | `100000000000000` wei |
+| `cancelled` | `false` |
+| `withdrawn` | `true` |
+| `status` | `1` (**Successful**) |
+
+The Read Contract/browser-run findings above are supplied independent results with explicit references; retrieving the two historical TinyFish run pages in this workspace returned 404 via the content reader, so no run transcript or new getter execution by this agent is claimed. Fresh Vercel API and public rendered-page corroboration succeeded by their separate read-only methods. These later findings close the specified 6D evidence gaps prospectively, not retrospectively.
 
 ## Outstanding acceptance requirements and limits
 
-- [ ] Broader **physical-device and accessibility** testing, real browser/device matrix, keyboard/focus and assistive-technology coverage completed. Automated responsive cases do not fill this gate.
-- [ ] **Direct post-withdrawal on-chain getter read** independently recorded, including returned settlement fields. The successful event/payout is not a substitute.
-- [ ] **Creator-connected “Successfully withdrawn” frontend assertion** independently recorded.
-- [ ] **Immutable Vercel production deployment/build SHA** independently established. GitHub main/merge SHAs alone do not establish what the alias serves; broader hosting/RPC/CORS/deep-link acceptance remains to be completed.
+- [ ] Broader **physical-device and accessibility** testing, keyboard/focus and assistive-technology coverage completed. Automated responsive cases do not fill this gate.
+- [ ] **Comprehensive browser/device and wrong-network testing**, including account/network transitions, completed. Narrow public/user-attested checks do not establish the full matrix.
+- [ ] **Creator-connected “Successfully withdrawn” frontend/MetaMask assertion** independently recorded. The completed disconnected public-page check is not this assertion.
 - [ ] Independent formal security audit completed. None is claimed.
-- [ ] Independent final acceptance result/reviewer/date recorded. **No comprehensive production acceptance yet.**
+- [ ] Independent final acceptance result/reviewer/date recorded. **No comprehensive production/security acceptance yet.**
 
 Implementation limits retained: **page-session-only** pending tracking; **one-confirmation** receipt handling; **full replacement and chain reorganization handling not implemented**. Duplicate refund/withdrawal prevention is covered by contract behavior and local tests, **not extra live duplicate attempts**. Save pending hashes before navigation/reload and inspect receipts/current state before repeating an action.
 
 | Still-unverified acceptance evidence | Actual value |
 | --- | --- |
-| Direct post-withdrawal getter result/reference | |
 | Creator-connected withdrawn UI assertion/reference | |
-| Immutable Vercel build-SHA attestation | |
 | Broader physical-device/accessibility results | |
+| Comprehensive browser/device/wrong-network results | |
 | Formal security audit reference | |
 | Final acceptance result, reviewer and date | |
 
-See [6D evidence and detailed provenance](live-lifecycle-evidence-6d.md). Preserve the [historical 6B record](deployment-evidence-6b.md) and all 6A reports unchanged. This is an evidence handoff for independent review, **not permission to deploy/redeploy, send transactions, request signatures, fill gaps with sample writes, merge or enable auto-merge**.
+See [6E follow-up and methods](acceptance-followup-6e.md). Preserve the [historical 6D record](live-lifecycle-evidence-6d.md), [6B record](deployment-evidence-6b.md) and all 6A reports unchanged. This is an evidence handoff for independent review, **not permission to deploy/redeploy, send transactions, request signatures, fill gaps with sample writes, merge or enable auto-merge**.
