@@ -1,0 +1,60 @@
+name: Cross-browser QA
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive:
+    name: Responsive and accessibility (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    defaults:
+      run:
+        working-directory: web
+    env:
+      QA_BROWSER: ${{ matrix.browser }}
+      PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install browser and system dependencies
+        run: npx playwright install --with-deps "$QA_BROWSER"
+      - name: Record environment and browser version
+        run: |
+          cat /etc/os-release
+          node --version
+          npm --version
+          npx playwright --version
+          env -u PLAYWRIGHT_CHROMIUM_EXECUTABLE node --input-type=module <<'NODE'
+          import { firefox, webkit } from '@playwright/test';
+          const engine = process.env.QA_BROWSER;
+          const browser = await ({ firefox, webkit })[engine].launch();
+          console.log(JSON.stringify({ engine, version: browser.version(), platform: process.platform }));
+          await browser.close();
+          NODE
+      - name: Run responsive and accessibility smoke tests
+        run: env -u PLAYWRIGHT_CHROMIUM_EXECUTABLE npx playwright test responsive-acceptance.spec.ts --browser "$QA_BROWSER" --reporter line,json --trace retain-on-failure
+      - name: Retain test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-browser-${{ matrix.browser }}-${{ github.run_attempt }}
+          path: web/test-results/
+          retention-days: 14
