@@ -140,7 +140,7 @@ This section is the future append-only execution ledger: add a complete evidence
 
 ## 10. Confirmed defects and unresolved observations
 
-**No new confirmed defect is recorded in 7D because no qualifying manual test was performed.** This is not evidence that the production application is defect-free.
+**No manual defect is recorded in this reference because no qualifying manual test was performed. Automated findings, if any, are recorded separately under the updated scope.** This is not evidence that the production application is defect-free.
 
 7A's Campaign #2 clipping observation near 869 px and transient listing-card-content observation remain **Unconfirmed**, with original provenance in [7A](qa-7a.md). The source session did not reach 375/390 px. Passing mocked matrices in 7A–7C do not retrospectively establish the exact production observation's cause or turn it into a manual pass. No 7D reproduction is claimed. 7B's established test-readiness diagnosis remains separate historical evidence.
 

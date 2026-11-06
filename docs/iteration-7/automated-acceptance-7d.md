@@ -6,7 +6,7 @@ Accepted `main`: `2bc38927843303de135ff187f42142163fbe7abe`. Existing draft PR [
 
 Production target: [decentralized-crowdfunding-dapp.vercel.app](https://decentralized-crowdfunding-dapp.vercel.app). Production implementation, CSS, Solidity/ABI/address, existing tests/workflows and Vercel/RPC configuration remain frozen. New scope covers dedicated tests/configuration/workflow, this report, scope qualifications in [the optional manual reference](manual-acceptance-7d.md), and one accessibility development dependency with its lockfile. No manual testing is requested from the owner.
 
-**Completion decision: incomplete pending hosted execution.** A discovered application violation remains a failing assertion and a follow-up finding; it is not fixed or excluded in this iteration. Significant failed/blocked automated checks prevent automated completion. Physical devices, actual spoken screen-reader output, real MetaMask behavior and formal security acceptance are outside the updated completion criteria and remain unverified, never Passed by inference.
+**Completion decision: automated 7D remains incomplete: six hosted axe scans failed on production accessibility violations.** A discovered application violation remains a failing assertion and a follow-up finding; it is not fixed or excluded in this iteration. Significant failed/blocked automated checks prevent automated completion. Physical devices, actual spoken screen-reader output, real MetaMask behavior and formal security acceptance are outside the updated completion criteria and remain unverified, never Passed by inference.
 
 ## Test architecture and safety
 
@@ -72,21 +72,28 @@ npx playwright install --with-deps chromium
 npx playwright test --config playwright.acceptance-7d.config.ts --project linux-chromium
 ```
 
-Windows OS build and Chrome CDP `Browser.getVersion`, Linux OS/browser, Node/npm and Playwright versions are logged by the workflow. A hosted Windows Chrome run is automated Windows/browser evidence, not a session on the owner's physical computer. Exact environments, run links and counts will be filled only after execution.
+Windows OS build and Chrome CDP `Browser.getVersion`, Linux OS/browser, Node/npm and Playwright versions are logged by the workflow. A hosted Windows Chrome run is automated Windows/browser evidence, not a session on the owner's physical computer. The first hosted execution used automation commit `03728af7d0704ff63ca119e19859d012bac34617` in [run 42173114375](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375). Execution date: **6 November 2026, MYT (UTC+08:00)**. Linux tests ran approximately **14:14:16–14:15:04 MYT**; Windows tests completed at **14:15:45 MYT** (underlying job timestamps are UTC). Runtime environments:
+
+- Windows Server 2025 Datacenter, **10.0.26100**, 64-bit; real Google Chrome channel, CDP product **Chrome/157.0.8103.39**; Node **22.23.4**, Playwright **1.64.1**, headless execution. This is hosted Windows evidence, not the owner's physical computer.
+- Ubuntu **24.04.5 LTS**; Chromium **156.0.8078.4**; Node **22.23.4**, Playwright **1.64.1**, axe-core **4.14.0**. Axe scans used **1440×900**; reflow/touch viewports are listed above.
+
+[Windows job/logs](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/job/127745308232) and [Linux job/logs](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/job/127745308630) were inspected. Both launched and reached the production pages: the Linux failures below are **application accessibility findings**, not browser-install or RPC failures.
 
 ## Results ledger
 
 | Execution | Passed | Failed | Skipped | Classification |
 | --- | --- | --- | --- | --- |
 | Local selected production axe-homepage case | 0 | 1 | 0 | Infrastructure failure before page/scan; not an accessibility finding |
-| Hosted Windows Google Chrome — 6 planned | — | — | — | Pending actual execution |
-| Hosted Linux Chromium — 20 planned | — | — | — | Pending actual execution |
+| Hosted Windows Google Chrome | **6** | **0** | **0** | Five actual production routes + keyboard passed |
+| Hosted Linux Chromium | **14** | **6** | **0** | Six axe scans failed; reflow 10, touch 2, keyboard 1 and motion 1 passed |
 
-No new production smoke, mobile/reflow, keyboard, motion or accessibility case is marked Passed on discovery alone. New-suite artifacts include per-test browser/viewport/URL and safety logs, document bounds, full axe/contrast results and actual screenshots; traces are retained on failure. Artifacts are time-limited runtime evidence, not tracked screenshots or permanent manual records.
+Hosted total: **26 executed, 20 passed, 6 failed, 0 skipped**. Windows verified real public loading/navigation/scrolling/focus, current Campaign #1/#2 financial/status fields against independent Sepolia reads, and Campaign #2's Successful/withdrawn result and absent withdrawal button. Linux passed all ten production reflow cases and both touch orientations, plus keyboard and reduced motion. Invalid-field names/descriptions/recovery assertions completed before the invalid-form axe assertion failed. No complete axe scan passed, so accessibility acceptance is not closed.
+
+Evidence: [Windows artifact](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/artifacts/13482260647) and [Linux artifact](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/artifacts/13481089302), uploaded successfully, expire **20 November 2026**. They contain JSON/full axe results, actual rendered screenshots and failure traces; no screenshot is committed. Example actual Linux failure file listed in logs: `artifacts/automated-7d--axe-WCAG-A-AA-campaigns-2-linux-chromium/test-failed-1.png`, alongside its trace. Complete job logs and artifact metadata were inspected; ZIP contents were not separately materialized locally. Latest documentation-head CI outcomes are recorded in PR #16, without attributing those later runs to this first evidence SHA. New-suite artifacts include per-test browser/viewport/URL and safety logs, document bounds, full axe/contrast results and actual screenshots; traces are retained on failure. Artifacts are time-limited runtime evidence, not tracked screenshots or permanent manual records.
 
 ## Existing regression results
 
-Local locked installation, typecheck and build passed; **57 unit tests passed**, **127 Chromium scenarios passed (0 failed/skipped)**, and Foundry formatting/build plus **43 tests passed (0 failed/skipped)**. Automatically triggered existing hosted Chromium/Firefox/WebKit/Foundry results will be added from actual execution logs. Accepted baseline counts (57 unit, 127 Chromium, 57 Firefox, 57 WebKit, 43 Foundry) are expectations, not substituted new execution results. Any locally blocked engines remain explicitly unexecuted; hosted runs provide separate results.
+Local locked installation, typecheck and build passed; **57 unit tests passed**, **127 Chromium scenarios passed (0 failed/skipped)**, and Foundry formatting/build plus **43 tests passed (0 failed/skipped)**. Initial hosted regression evidence on the same automation commit: [frontend run 42173114487](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114487) passed build, **57 unit tests** and **127 Chromium scenarios**; [Foundry run 42173114327](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114327) passed formatting/build and **43 tests**; [cross-browser run 42173114507](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114507) has **WebKit 57 passed** in inspected logs, Firefox still pending at this evidence update. Firefox's actual outcome will be recorded before handoff. Accepted baseline counts (57 unit, 127 Chromium, 57 Firefox, 57 WebKit, 43 Foundry) are expectations, not substituted new execution results. Any locally blocked engines remain explicitly unexecuted; hosted runs provide separate results.
 
 ## Prior independent remote-browser reference
 
@@ -94,8 +101,27 @@ The owner supplied [the completed read-only production inspection](https://agent
 
 ## Findings, completion decision and remaining limits
 
-Current confirmed blocker: local production proxy access. Hosted outcomes and axe findings are pending. Any violation must record engine/version, route/viewport, rule/selector, expected/actual, available contrast data and workflow screenshot/trace reference; repeatable code issues are proposed for a separate CSS/React follow-up, never fixed or suppressed here. Unresolved axe incomplete checks are identified separately from confirmed violations.
+### Confirmed finding: visible label / accessible name mismatch
+
+Axe rule **`label-content-name-mismatch`**, impact **serious**, WCAG **2.5.3 (Label in Name)**, failed in all six scans (five default routes and invalid `/create` state). At **1440×900**, Linux Chromium **156.0.8078.4**, expected the accessible name to include the visible label; actual axe diagnostic: **“Text inside the element is not included in the accessible name.”** Shared header and footer brand links fail on every route. The homepage also fails for `.feature-cover-link`.
+
+Actual selectors include `.header-inner > .brand[href="/"][aria-label="DeCen Crowdfund home"]`, its `.footer-inner` counterpart, and homepage `.feature-cover-link`. Reproduction: run the dedicated Linux project on production, wait for public data/fonts/layout, and execute the full tagged axe scan. The same shared-link violation appeared across all five routes and the invalid-form state; screenshots, node HTML/targets and traces are retained in the Linux artifact. This is reproducible automated evidence, not a speech-recognition or screen-reader session. Suggested follow-up: separately authorize a narrowly scoped review aligning these links' accessible names with their visible labels (including whether cover artwork is genuinely decorative), then rerun these unchanged assertions. No React/CSS/name correction or exclusion is made here.
+
+### Measured contrast samples and unresolved axe checks
+
+Axe returned no confirmed `color-contrast` violation, but its rule is partly **incomplete** on all scans; this is not an all-elements contrast pass. Reliable reported samples:
+
+| Actual sample | Foreground / background | Reported ratio | Expected by axe | Interpretation |
+| --- | --- | --- | --- | --- |
+| Header white brand mark | `#ffffff` / `#2855c7` | **6.53:1** | 3:1 (23.3pt bold) | Sample meets reported threshold |
+| Header brand text | `#17263c` / `#ffffff` | **15.22:1** | 3:1 (20.3pt bold) | Sample meets reported threshold |
+| Small brand subtext / ordinary nav link | `#17263c` / `#ffffff` | **15.22:1** | 4.5:1 | Sample meets reported threshold |
+| Active navigation link | `#2855c7` / `#ffffff` | **6.53:1** | 4.5:1 | Sample meets reported threshold |
+
+Incomplete results include a short decorative brand character (`#f27660` / `#2855c7`, reported **2.34:1**, `shortTextContent`), symbol bullets (`nonBmp`) and footer short-text results without reliably resolved colors. These are retained for review, **not promoted to confirmed contrast defects or passes**. The listing scan also has an incomplete `aria-prohibited-attr` check; full node details remain in the axe artifact. No automatically detected violation is suppressed and no incomplete result is asserted to be a spoken/UI success.
+
+The local production proxy blocker remains separate. Hosted production navigation/RPC/read checks succeeded; the failing acceptance gate is the confirmed label/name finding. Any violation must record engine/version, route/viewport, rule/selector, expected/actual, available contrast data and workflow screenshot/trace reference; repeatable code issues are proposed for a separate CSS/React follow-up, never fixed or suppressed here. Unresolved axe incomplete checks are identified separately from confirmed violations.
 
 The optional manual checklist retains all 20 IDs and 25 device/route cells as **Not tested**. They no longer block automated-only 7D completion and are not requested from the owner. Actual physical Android/iOS/macOS sessions, spoken screen readers, real MetaMask recovery, genuine browser zoom (versus viewport equivalence), OS on-screen-keyboard behavior and formal security review remain unverified. Existing 6F live observations and 6A–7C history remain unchanged. Pending tracking remains page-session-only; receipt handling remains one confirmation without a comprehensive replacement/reorganization monitor.
 
-Until the authorized automated checks have actual passing results, **7D remains incomplete**. If they all pass, automated acceptance can be reported complete subject to independent review, without closing the unverified categories above. PR #16 stays draft, open and unmerged, with no auto-merge or main modification.
+**7D remains incomplete because six authorized accessibility scans failed.** If they all pass, automated acceptance can be reported complete subject to independent review, without closing the unverified categories above. PR #16 stays draft, open and unmerged, with no auto-merge or main modification.
