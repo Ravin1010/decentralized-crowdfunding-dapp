@@ -125,3 +125,28 @@ The local production proxy blocker remains separate. Hosted production navigatio
 The optional manual checklist retains all 20 IDs and 25 device/route cells as **Not tested**. They no longer block automated-only 7D completion and are not requested from the owner. Actual physical Android/iOS/macOS sessions, spoken screen readers, real MetaMask recovery, genuine browser zoom (versus viewport equivalence), OS on-screen-keyboard behavior and formal security review remain unverified. Existing 6F live observations and 6A–7C history remain unchanged. Pending tracking remains page-session-only; receipt handling remains one confirmation without a comprehensive replacement/reorganization monitor.
 
 **7D remains incomplete because six authorized accessibility scans failed.** If they all pass, automated acceptance can be reported complete subject to independent review, without closing the unverified categories above. PR #16 stays draft, open and unmerged, with no auto-merge or main modification.
+
+
+## Post-7E production verification and final integration
+
+This appended section supplements the initial evidence above; **the original six failed scans and their run identifiers remain intact**. Earlier incomplete-status statements describe the pre-integration checkpoint, not a retrospective failure-to-pass rewrite. The final acceptance decision will use the new execution evidence below.
+
+The owner supplied independently verified production deployment SHA **`889a649646f8d1dd2b6a9ef4e58033a1e780f6d4`**. Repository `origin/main` was independently fetched and matched that exact accepted SHA. No deployment or configuration change was performed during this integration; recording the supplied deployment identity is not a new asset-hash/Vercel API verification by this agent.
+
+### Diagnostic production rerun — attempt 2
+
+[Run 42174203141, attempt 2](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42174203141/attempts/2), [Linux job 127838426652](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42174203141/job/127838426652), was read-only inspected. On **6 November 2026, approximately 18:19–18:21 MYT (UTC+08:00)** (log timestamps 10:19–10:21 UTC), it reported **19 passed, 1 failed, 0 skipped**. All **six unchanged full axe scans passed with zero detected violations** on the deployed corrected UI.
+
+The sole remaining failure was `@keyboard production skip link and header/form focus`: the exact locator still requested **DeCen Crowdfund home**, while 7E's content-derived brand name is **DeCen CROWDFUND**. The diagnostic exception was a `toBeFocused` locator failure, not a renewed axe violation. Contrast and the listing ARIA checks classified as **incomplete** remain incomplete; they are not promoted to full accessibility/conformance passes.
+
+### Integration and authorized change
+
+Both expected remote SHAs were confirmed before changes: original PR head **`ec11f11f7d7a3aaf833cec7c2936de2c831d7d64`**, accepted main **`889a649646f8d1dd2b6a9ef4e58033a1e780f6d4`**. Ordinary two-parent merge **`9a90e78afbf39098f06e0ee6f1883c2d93aa1b41`** has those commits as its first and second parents respectively. All four existing PR commits remain ancestors. Raw Git metadata verifies both author and committer as `Ravin1010 <75482385+Ravin1010@users.noreply.github.com>`; no co-author trailer, rebase, squash, force-push or reuse of detached candidate `f89af18720494ccb62f1740db108dd807ee700cd`.
+
+After that merge, the only test edit replaces the one exact brand-name string in the keyboard test. Keyboard actions, assertions, order, focus behavior, all six axe scans, WCAG tags and rules are unchanged. Production source/CSS/contract/ABI/wallet/financial/configuration files match accepted main. No production redeployment, wallet permission/signature, network switch or public-chain transaction is initiated.
+
+### Final verification record
+
+Final-head workflows have not yet executed at this append. Expected counts (Windows 6, Linux 20 including six scans, Chromium 131, Firefox/WebKit 57 each, unit 57, Foundry 43) are **not** claimed as outcomes. Actual completed logs, failure artifacts if any and workflow references will be appended after execution. Any final failed or unexecuted significant check keeps automated acceptance incomplete.
+
+Physical devices, actual spoken-screen-reader sessions, real-wallet recovery, genuine browser zoom beyond recorded viewport equivalence and comprehensive security acceptance remain outside automated 7D's completion claim. PR #16 must remain **DRAFT, OPEN and UNMERGED**, without auto-merge or an automatic ready-for-review transition.

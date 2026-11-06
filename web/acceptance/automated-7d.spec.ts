@@ -217,7 +217,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }
 
 test('@keyboard production skip link and header/form focus', async ({ page }) => {
   await open(page, '/create');
-  for (const control of [page.locator('.skip-link'), page.getByRole('banner').getByRole('link', { name: 'DeCen Crowdfund home' }), page.getByRole('navigation').getByRole('link', { name: 'Explore campaigns' }), page.getByRole('navigation').getByRole('link', { name: 'Start a campaign' }), page.getByRole('button', { name: 'Connect Wallet', exact: true })]) {
+  for (const control of [page.locator('.skip-link'), page.getByRole('banner').getByRole('link', { name: 'DeCen CROWDFUND' }), page.getByRole('navigation').getByRole('link', { name: 'Explore campaigns' }), page.getByRole('navigation').getByRole('link', { name: 'Start a campaign' }), page.getByRole('button', { name: 'Connect Wallet', exact: true })]) {
     await page.keyboard.press('Tab'); await expect(control).toBeFocused();
     expect(await control.evaluate(e => { const s = getComputedStyle(e); return s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 2; })).toBe(true);
   }
