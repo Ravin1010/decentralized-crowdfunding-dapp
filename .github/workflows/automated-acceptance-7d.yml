@@ -1,0 +1,83 @@
+name: Automated acceptance 7D
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-chrome:
+    name: Production / Windows Google Chrome
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Ensure Google Chrome channel
+        run: npx playwright install chrome
+      - name: Record Windows and Chrome environment
+        run: |
+          Get-CimInstance Win32_OperatingSystem | Select-Object Caption, Version, OSArchitecture | Format-List
+          node --version
+          npm --version
+          npx playwright --version
+          node --input-type=module -e "import { chromium } from '@playwright/test'; const b=await chromium.launch({channel:'chrome'}); const s=await b.newBrowserCDPSession(); console.log(JSON.stringify(await s.send('Browser.getVersion'))); await b.close();"
+      - name: Read-only production acceptance
+        run: npx playwright test --config playwright.acceptance-7d.config.ts --project windows-chrome
+      - name: Retain Windows evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-7d-windows-chrome-${{ github.run_attempt }}
+          path: web/test-results/acceptance-7d/
+          retention-days: 14
+  linux-accessibility:
+    name: Production / Linux accessibility and reflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Record Linux environment
+        run: |
+          cat /etc/os-release
+          node --version
+          npm --version
+          npx playwright --version
+          node --input-type=module -e "import {chromium} from '@playwright/test'; const b=await chromium.launch(); console.log(JSON.stringify({browser:b.version(),platform:process.platform})); await b.close();"
+      - name: Accessibility, production reflow and touch emulation
+        run: npx playwright test --config playwright.acceptance-7d.config.ts --project linux-chromium
+      - name: Retain Linux evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-7d-linux-chromium-${{ github.run_attempt }}
+          path: web/test-results/acceptance-7d/
+          retention-days: 14
