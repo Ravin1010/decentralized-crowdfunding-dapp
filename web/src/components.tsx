@@ -4,12 +4,12 @@ import { eth, remaining, fundingPercent } from "./campaigns";
 
 export function Brand() {
   return (
-    <a className="brand" href="/" aria-label="DeCen Crowdfund home">
+    <a className="brand" href="/">
       <span className="brand-mark" aria-hidden="true">
         d<span>c</span>
       </span>
       <span>
-        DeCen<span className="brand-sub">CROWDFUND</span>
+        DeCen <span className="brand-sub">CROWDFUND</span>
       </span>
     </a>
   );
@@ -27,14 +27,16 @@ export function CampaignStatusBadge({ campaign: c }: { campaign: Campaign }) {
 export function Cover({
   campaign: c,
   featured = false,
+  decorative = true,
 }: {
   campaign: Campaign;
   featured?: boolean;
+  decorative?: boolean;
 }) {
   return (
     <div
       className={`cover ${c.cover} ${featured ? "cover-featured" : ""}`}
-      aria-hidden="true"
+      aria-hidden={decorative}
     >
       <span className="cover-note">{c.coverNote}</span>
       <strong>{c.coverTitle}</strong>
