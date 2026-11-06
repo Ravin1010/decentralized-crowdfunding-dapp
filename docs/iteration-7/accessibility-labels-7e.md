@@ -17,7 +17,7 @@ Only [components.tsx](../../web/src/components.tsx), [App.tsx](../../web/src/App
 - All six scans failed on **`label-content-name-mismatch`**, serious impact, WCAG 2.5.3 Label in Name. Routes: `/`, `/campaigns`, `/campaigns/1`, `/campaigns/2`, `/create`, plus invalid `/create` state.
 - Actual targets: `.header-inner > .brand[href="/"][aria-label="DeCen Crowdfund home"]`, its footer counterpart, and homepage `.feature-cover-link`. Diagnostic: **“Text inside the element is not included in the accessible name.”**
 
-The [Linux evidence artifact](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/artifacts/13481089302) contains original screenshots/full results/traces, with finite retention to 20 November 2026. This is recorded historical evidence, not a new production scan by 7E. No historical failure is converted into a pass.
+The [Linux evidence artifact](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42173114375/artifacts/13481089302) contains original screenshots/full results/traces, with finite retention to 20 November 2026. The [final-head 7D run 42174203141](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42174203141) was also read-only rechecked during 7E: its Linux log records **14 passed / 6 failed** on the same rule; Windows passed 6/6. This is recorded historical evidence, not a new production scan or workflow dispatch by 7E. No historical failure is converted into a pass.
 
 ## Investigation before editing
 
@@ -90,7 +90,13 @@ Local checks passed:
 | Isolated full candidate axe scans | **7 passed, 0 failed, 0 skipped** |
 | Foundry formatting/build/tests | Passed; **43 passed, 0 failed, 0 skipped** |
 
-Hosted PR CI outcomes, including actual Firefox/WebKit execution, will be added from completed job logs. No local Firefox/WebKit result is inferred from Chromium. Commands:
+Hosted evidence on candidate source commit `f84d0616f1728e37ffc44486220fb01bfc95aac8`:
+
+- [Frontend run 42178051196](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42178051196): locked install/typecheck/build succeeded; completed logs confirm **57 unit tests and 131 Chromium cases passed**.
+- [Foundry run 42178051171](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42178051171): formatting/build succeeded; **43 passed, 0 failed/skipped**.
+- [Cross-browser run 42178051207](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42178051207): completed Firefox job logs confirm **Firefox 157.0, 57 passed, 0 failed/skipped**. WebKit remained in browser/system-dependency installation at this evidence update: **no WebKit tests/results claimed for that pending execution**. This is a CI environment wait, not an observed application failure. Latest-head CI status and subsequent actual outcomes are recorded separately in the PR; pending attempts are never retrospectively called passes.
+
+Local Firefox/WebKit were not executed; hosted outcomes are separate from Chromium. Existing optional ox/Tempo worker-thread externalization/bundle-size build notices remain. No retries, rule exclusions or suppressed failures were added. Commands:
 
 ```sh
 cd web
