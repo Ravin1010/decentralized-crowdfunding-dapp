@@ -150,3 +150,30 @@ After that merge, the only test edit replaces the one exact brand-name string in
 Final-head workflows have not yet executed at this append. Expected counts (Windows 6, Linux 20 including six scans, Chromium 131, Firefox/WebKit 57 each, unit 57, Foundry 43) are **not** claimed as outcomes. Actual completed logs, failure artifacts if any and workflow references will be appended after execution. Any final failed or unexecuted significant check keeps automated acceptance incomplete.
 
 Physical devices, actual spoken-screen-reader sessions, real-wallet recovery, genuine browser zoom beyond recorded viewport equivalence and comprehensive security acceptance remain outside automated 7D's completion claim. PR #16 must remain **DRAFT, OPEN and UNMERGED**, without auto-merge or an automatic ready-for-review transition.
+
+### Completed integrated-head verification — 6 November 2026
+
+Verified test head: **`15f546c349f38b84366947f710d70673070df3c1`**, after ordinary merge `9a90e78afbf39098f06e0ee6f1883c2d93aa1b41` and the exact locator correction. Completed job logs and artifact manifests were inspected. Execution was approximately **18:31–18:35 MYT (UTC+08:00)** (underlying UTC timestamps 10:31–10:35). These are actual results, not expected-count substitution:
+
+| Check | Actual passed | Failed | Skipped | Completed workflow evidence |
+| --- | --- | --- | --- | --- |
+| Windows Google Chrome production acceptance | **6** | 0 | 0 | [Acceptance run 42203288331](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288331), [Windows job](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288331/job/127843604051) |
+| Linux Chromium production acceptance | **20** | 0 | 0 | Same run, [Linux job](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288331/job/127843603674) |
+| Full unchanged axe scans (included in Linux's 20) | **6** | 0 | 0 | All six `AXE_RESULT` records have `violations: []` |
+| Chromium browser regression | **131** | 0 | 0 | [Frontend run 42203288473](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288473) |
+| Unit tests | **57** | 0 | 0 | Same frontend run; TypeScript/typecheck and production build also succeeded |
+| Firefox QA | **57** | 0 | 0 | [Cross-browser run 42203288384](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288384), [Firefox job](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288384/job/127843604422) |
+| WebKit QA | **57** | 0 | 0 | Same run, [WebKit job](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288384/job/127843604932) |
+| Foundry tests | **43** | 0 | 0 | [Foundry run 42203288660](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288660); formatting and build also succeeded |
+
+Production total: **26 passed, 0 failed, 0 skipped**. The six axe scans are a subset of Linux's 20, not six additional tests. Actual runtime evidence: Windows Server 2025 Datacenter **10.0.26100**, real Chrome channel/CDP product **157.0.8103.39**; Ubuntu **24.04.5 LTS**, Chromium **156.0.8078.4**; Firefox **157.0**, WebKit **27.2**, Node **22.23.4**, Playwright **1.64.1**. The tests remain headless browser automation, not physical-owner-device or spoken-screen-reader sessions.
+
+The six passing scans cover the homepage, listing, Campaign #1, Campaign #2, create, and invalid create/recovery state. They retain the original rules/tags and assertion. No skip, retry-based masking, suppression, new exclusion or `continue-on-error` was introduced. The keyboard case now passes using the accepted 7E name without changing its actions or focus checks. Existing financial/wallet safeguards remain unchanged; production interactions were read-only.
+
+**Incomplete checks remain incomplete:** `color-contrast` is retained in all six scan records, and the listing also retains `aria-prohibited-attr` as incomplete. Zero detected violations is not a claim that those unresolved checks or every WCAG criterion passed.
+
+Actual evidence archives: [Linux results/screenshots](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288331/artifacts/13495546721) and [Windows results/screenshots](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42203288331/artifacts/13495113977), uploaded successfully with expiry **20 November 2026**. No new test failed, so this head generated no failing-test trace/context requiring diagnosis. Full result JSON and screenshot archives are linked; ZIP contents were not separately materialized locally. The earlier diagnostic failure archive remains [attempt-2 Linux evidence](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42174203141/artifacts/13493424657); its failing locator/stack was inspected in the completed diagnostic job log. Historical failure records are retained rather than relabeled.
+
+**Decision for the authorized scope: automated 7D acceptance passes and is ready for independent review.** This supersedes earlier *status* statements only; the original six failed scans and subsequent 19/1 diagnostic remain their historical outcomes. Physical devices, spoken screen readers, real-wallet recovery, comprehensive accessibility conformance and comprehensive production/security acceptance are not closed by this decision. No deployment or public-chain transaction was initiated during integration.
+
+This append is a documentation-only follow-up after the verified head's CI finished. Its resulting commit will automatically trigger unchanged workflows again; latest-head CI and exact raw Git attribution are recorded in PR #16 without inventing execution on a not-yet-tested SHA. The PR remains **DRAFT, OPEN and UNMERGED**, with no automatic ready-for-review or auto-merge action.
