@@ -212,7 +212,7 @@ for (const width of [375, 869, 1440]) {
     expect(await page.evaluate(() => !!document.querySelector("main")?.contains(document.activeElement))).toBe(true);
     await page.goto(liveUrl + "/create");
     await settle(page, "/create");
-    for (const target of [page.locator(".skip-link"), page.getByRole("banner").getByRole("link", { name: "DeCen Crowdfund home" }),
+    for (const target of [page.locator(".skip-link"), page.getByRole("banner").getByRole("link", { name: "DeCen CROWDFUND" }),
       page.getByRole("navigation").getByRole("link", { name: "Explore campaigns" }),
       page.getByRole("navigation").getByRole("link", { name: "Start a campaign" }), page.getByRole("button", { name: "Connect Wallet", exact: true })]) {
       await page.keyboard.press("Tab");

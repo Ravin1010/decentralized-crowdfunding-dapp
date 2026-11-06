@@ -149,9 +149,8 @@ function Home() {
             <a
               href={c ? `/campaigns/${c.id}` : "/campaigns"}
               className="feature-cover-link"
-              aria-label={`Discover ${c.title}`}
             >
-              <Cover campaign={c} featured />
+              <Cover campaign={c} featured decorative={false} />
             </a>
             <div className="feature-info">
               <div>
