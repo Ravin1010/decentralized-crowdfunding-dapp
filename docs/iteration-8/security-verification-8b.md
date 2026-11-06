@@ -361,3 +361,28 @@ Pre-submission validation requires exactly the two authorized new Markdown files
 Independent review must consider all four Slither results and F-01–F-08, approve any separate remediation scope, obtain accessible header/control evidence, and explicitly decide remaining release gates. Do not silently “fix” findings within this evidence PR. The owner-skipped 7F manual-device/accessibility and 8A complete real-wallet scopes remain **Not tested**. Prior user-attested 6F evidence remains limited to its recorded observations; it is not upgraded to full wallet acceptance.
 
 This review permits no new live blockchain action or deployment. Conditional experimental Sepolia assessment only; no mainnet or unrestricted real-funds release without security sign-off and explicit authorization. An absence of reported exploits in these checks is not proof of security, formal verification or a completed independent audit. Keep the PR draft/open/unmerged and stop for independent review.
+
+## 10. Hosted CI evidence supplement — initial evidence head
+
+Draft [PR #18](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/pull/18) was opened with head **`0f25c81fef6f685d808bfec08569334fd3e87409`**, base `149d7fcb5b7e309d0417c4c1e6a69ab997f95da1`. The following are fresh PR-triggered results, verified from job logs rather than inherited results or status icons. No workflow was edited, dispatched with altered inputs or rerun to mask a failure.
+
+| Workflow / jobs | Actual log evidence at initial evidence head |
+| --- | --- |
+| [Foundry checks](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42213317187) | Format/build passed; Foundry 1.5.0 / solc 0.8.20; 43 passed, 0 failed/skipped. Job `127877055297`. |
+| [Frontend build](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42213317160) | `tsc --noEmit && vite build` passed; unit 57 passed; Chromium 131 passed; 0 failed/skipped. Job `127877054794`. |
+| [Automated acceptance 7D](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42213317200) | Windows Chrome 6 passed; Linux Chromium 20 passed; 0 failed/skipped. Jobs `127877054916` / `127877055136`. All six full axe scans reported `violations:[]`. |
+| [Cross-browser QA](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/actions/runs/42213317240) | Firefox 57 passed, 0 failed/skipped, job `127877055347`. WebKit installation was still in progress at 2026-11-06 12:00 UTC; this is not a pass. The run link and PR #18 retain its eventual outcome. |
+
+Hosted environment observed in logs: Ubuntu 24.04.5 LTS and Windows Server 2025 Datacenter; Node 22.23.4, npm 10.9.9, Playwright 1.64.1. Windows Google Chrome channel: **157.0.8103.39**. Linux acceptance Chromium: **156.0.8078.4**. Firefox: **157.0**. These are hosted automated browser sessions, not physical-device or owner-computer evidence.
+
+The Linux job's six `AXE_RESULT` records cover `/`, `/campaigns`, `/campaigns/1`, `/campaigns/2`, `/create` and invalid-form `/create`. Each reported zero violations. **All six retain `color-contrast` incomplete checks; `/campaigns` also retains `aria-prohibited-attr` incomplete.** Neither incompletes nor prior historical failures are converted to passes. No full WCAG or spoken-screen-reader acceptance is inferred.
+
+Hosted production route/read/reflow tests succeeded even though local direct curl remained proxy-blocked. They do not measure the security headers blocked in section 6, prove cryptographic asset provenance, or establish comprehensive real-wallet behavior. Their existing safety fixture rejects permission/signature/switch/send RPC methods; no public transaction was submitted.
+
+Raw `git cat-file -p` and fuller log verified author **and** committer of `0f25c81fef6f685d808bfec08569334fd3e87409` as `Ravin1010 <75482385+Ravin1010@users.noreply.github.com>`; no co-author trailer. Later documentation-only evidence commits are verified separately and recorded in PR metadata. Final-head checks must be inspected after any such commit; results above belong to the explicitly named head.
+
+### Local bytecode cross-check supplement
+
+Using viem `size`/`keccak256` on the newly built artifact: creation **4,030 bytes**, `0x202c464ec9e438aef048e3759d6a2def21492b9af4c773bc973c2c14c4cd1c52`; runtime **3,997 bytes**, `0x5b1a0eabdf6cde465b6427bf7d7c2b6542fa748dbac6cd60543d80ba9ebededd`. These match the recorded 6B artifact values exactly. Artifact metadata: optimizer enabled/200, EVM target `shanghai`, no viaIR setting. This is a **fresh local artifact to historical evidence comparison**, not a fresh on-chain code retrieval or chain gas-schedule reconciliation.
+
+This documentation-only supplement records the first evidence head without rewriting its results. Subsequent final-head CI run IDs, terminal results and any initial-run failure are recorded in [PR #18](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/pull/18) after log inspection; readers must not treat the above pending WebKit observation as a completed test.

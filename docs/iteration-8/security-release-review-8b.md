@@ -91,3 +91,11 @@ Before a broader release: obtain independent security sign-off, resolve/accept t
 ## 6. Open work and independent review request
 
 Review the findings, scanner triage, finite property model, actual CI logs and blocked checks in the [ledger](security-verification-8b.md). Any remediation must be a separate explicitly authorized change. Keep this PR **draft, open and unmerged**, with no auto-merge. This evidence submission does not constitute a finished/accepted security audit while the stated verification gaps and release gates remain open.
+
+### Hosted verification supplement
+
+Fresh ordinary PR CI for evidence head `0f25c81fef6f685d808bfec08569334fd3e87409` independently executed on GitHub-hosted runners: Foundry 43 passed; unit 57 and Chromium regression 131 passed; production Windows Chrome 6 and Linux Chromium 20 passed; Firefox 57 passed. WebKit was still installing dependencies when this supplement was prepared; its pending observation and workflow links are retained in the [CI ledger supplement](security-verification-8b.md#10-hosted-ci-evidence-supplement--initial-evidence-head). No test assertions or workflows changed. This improves hosted browsing evidence while local header access and branch-protection verification remain blocked.
+
+All six full production axe scans in that run reported zero violations, but retained contrast incompletes and an ARIA incomplete. They are not full accessibility acceptance. Fresh local creation/runtime bytecode hashes also match historical 6B artifacts (see ledger); no fresh on-chain bytecode verification is implied. All release gates and the independent-review requirement above remain open.
+
+Final-head CI and the eventual WebKit result are reported in [draft PR #18](https://github.com/Ravin1010/decentralized-crowdfunding-dapp/pull/18), separately from the initial-head observations above. No pending/blocked check is presumed passed.
