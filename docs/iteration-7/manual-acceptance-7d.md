@@ -1,12 +1,14 @@
 # Iteration 7D — manual accessibility and physical-device acceptance
 
+> **Updated owner-authorized scope: automated-only 7D.** The owner superseded the original manual-acceptance requirement. These 20 manual case IDs and 25 device/route cells are retained unchanged as optional future reference, with every unexecuted result still **Not tested**. Manual testing is no longer required to complete automated Iteration 7D. New execution results and the automation completion decision belong in [automated-acceptance-7d.md](automated-acceptance-7d.md). Automated passes never change these manual cases to Passed. The original checklist remains in Git history; this note qualifies its former completion requirements.
+
 ## 1. Scope and baseline
 
-**Preparation only; manual acceptance remains open.** Accepted `main`: `2bc38927843303de135ff187f42142163fbe7abe`. Branch: `feature/iteration-7d-manual-acceptance`. Production target: [DeCen Crowdfund](https://decentralized-crowdfunding-dapp.vercel.app).
+**Original manual preparation; optional manual acceptance remains open under the updated scope.** Accepted `main`: `2bc38927843303de135ff187f42142163fbe7abe`. Branch: `feature/iteration-7d-manual-acceptance`. Production target: [DeCen Crowdfund](https://decentralized-crowdfunding-dapp.vercel.app).
 
-Only this new document is authorized. Application, visual design, architecture, contracts/ABI, wallet/transaction behavior, dependencies, configuration, tests, CI and previous evidence remain unchanged. No screenshots or recordings are committed. Creating this checklist does **not** complete 7D or close any manual acceptance gate.
+The original preparation authorized only this new document; the updated scope separately authorizes dedicated automation, its report and the minimal accessibility development dependency. The original preparation left application, visual design, architecture, contracts/ABI, wallet/transaction behavior, dependencies, configuration, tests, CI and previous evidence unchanged. Under the new scope, production implementation and existing tests/workflows remain frozen; dedicated automation and its minimal development dependency are documented separately. No screenshots or recordings are committed. Creating this checklist alone does not establish automated completion or close any manual gate; automated 7D may complete independently after its authorized checks pass and review remains pending.
 
-All manual cases below are initialized **Not tested**. No qualifying manual production/device, real-keyboard, zoom, contrast-tool or screen-reader test was conducted during preparation. No new tester observations, execution dates, device/browser versions, measurements, screenshots or spoken announcements are asserted. A cloud/headless browser session or source inspection cannot supply missing physical-device or real-keyboard evidence.
+All manual cases below remain **Not tested**. No qualifying manual production/device, real-keyboard, zoom, contrast-tool or screen-reader test was conducted during preparation. No new tester observations, execution dates, device/browser versions, measurements, screenshots or spoken announcements are asserted. A cloud/headless browser session or source inspection cannot supply missing physical-device or real-keyboard evidence.
 
 ## 2. Prior automated QA — inherited evidence only
 
@@ -16,7 +18,7 @@ All manual cases below are initialized **Not tested**. No qualifying manual prod
 | [7B focus investigation](focus-stability-7b.md) | Reproduced a render-readiness race in a diagnostic copy; minimal test synchronization; three post-correction full Chromium runs passed 127/127 |
 | [7C cross-browser acceptance](cross-browser-acceptance-7c.md) | Hosted Firefox 157.0 and WebKit 27.2 each passed 57/57 on Ubuntu 24.04.5; Chromium 127/127, unit tests 57/57 and Foundry 43/43 also recorded |
 
-7C's suite covers ten widths, five routes and seven accessibility smoke cases using mocked public RPC/injected wallets. Its existing coverage includes skip-link activation, selected Tab order, labels/errors, computed focus indicators, progress semantics, announcement roles and reduced motion. These are **automated results inherited from 7A–7C**, not new 7D executions or manual passes. Linux WebKit is not Safari on iOS/macOS, viewport emulation is not a physical phone, and ARIA assertions are not evidence of spoken screen-reader output. No automated suites are rerun locally merely to add counts for this document. Any automatically triggered PR CI is reported separately as automation, not manual evidence.
+7C's suite covers ten widths, five routes and seven accessibility smoke cases using mocked public RPC/injected wallets. Its existing coverage includes skip-link activation, selected Tab order, labels/errors, computed focus indicators, progress semantics, announcement roles and reduced motion. These are **automated results inherited from 7A–7C**, not new 7D executions or manual passes. Linux WebKit is not Safari on iOS/macOS, viewport emulation is not a physical phone, and ARIA assertions are not evidence of spoken screen-reader output. The original manual-document preparation did not rerun automated suites. New-scope automation and required regressions are reported separately. Any automatically triggered PR CI is reported separately as automation, not manual evidence.
 
 ## 3. Manual evidence methodology
 
@@ -134,7 +136,7 @@ Source ARIA, an accessibility-tree inspection or Linux engine results are not sp
 
 **No manual executions are recorded.** All five device rows (25 route cells), four keyboard cases, three zoom/text cases, three visual/contrast cases and five screen-reader pairings remain **Not tested**. No case is marked Passed, Failed or Blocked without qualifying evidence. Execution date/time, tester, OS/device/browser versions, measured dimensions/contrast ratios and evidence references remain unfilled because no test occurred.
 
-This section is the future append-only execution ledger: add a complete evidence entry from section 3 per actual case/route/context and update only the supported matrix status. Partial coverage does not close an entire environment, state matrix or acceptance gate. Separately identify user-attested evidence and independently reproduced observations. No new screenshots, recordings or locally executed manual/automated passing counts were generated during preparation. Automatically triggered PR CI, if any, is separate automation and cannot close these manual cases.
+This section is the future append-only execution ledger: add a complete evidence entry from section 3 per actual case/route/context and update only the supported matrix status. Partial coverage does not close an entire environment, state matrix or acceptance gate. Separately identify user-attested evidence and independently reproduced observations. No new screenshots, recordings or locally executed manual/automated passing counts were generated during the original manual-document preparation; new automated evidence is tracked separately. Automatically triggered PR CI, if any, is separate automation and cannot close these manual cases.
 
 ## 10. Confirmed defects and unresolved observations
 
@@ -158,4 +160,4 @@ The existing [6F MetaMask observations](../iteration-6/live-wallet-acceptance-6f
 
 No application change, deployment, RPC/Vercel configuration change, security audit or comprehensive production/accessibility acceptance occurs here. Engineering limitations remain page-session-only pending tracking, one-confirmation receipts and no comprehensive replacement/reorganization monitor. Formal security review and comprehensive production acceptance remain open; previous automated and live evidence is not a substitute.
 
-Keep the PR **draft, open and unmerged**, without auto-merge. **7D is not complete:** manual evidence must still be collected and independently reviewed before acceptance gates can close.
+Keep the PR **draft, open and unmerged**, without auto-merge. Manual evidence remains uncollected for these optional future gates. **Automated 7D completion is governed by the separate report and no longer depends on manual testing**; it remains subject to independent review and cannot imply physical-device, spoken screen-reader, real-wallet or comprehensive security acceptance.
