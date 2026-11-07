@@ -4,6 +4,11 @@ Community crowdfunding with native ETH and an all-or-nothing funding model. Crea
 
 **Current status (Iteration 8B):** DeCen Crowdfund is deployed for **experimental Ethereum Sepolia testing only** (chain ID `11155111`) at [decentralized-crowdfunding-dapp.vercel.app](https://decentralized-crowdfunding-dapp.vercel.app). The verified Sepolia contract address is [`0x8627ffb5768CF5E47965E55F6855f8910b474A25`](https://sepolia.etherscan.io/address/0x8627ffb5768CF5E47965E55F6855f8910b474A25). See [6B deployment evidence](docs/iteration-6/deployment-evidence-6b.md), [6D live lifecycle](docs/iteration-6/live-lifecycle-evidence-6d.md) and [8B security review](docs/iteration-8/security-release-review-8b.md) for provenance and limits. **No mainnet deployment, formal security audit, or unrestricted real-value release is claimed.**
 
+## Portfolio & project handoff
+
+- [Portfolio overview](docs/iteration-9/portfolio-overview.md) — project purpose, engineering work and interview summary.
+- [Technical handoff](docs/iteration-9/final-handoff.md) — architecture, setup, verification evidence and known limitations.
+
 ## Current MVP
 
 - Public campaign discovery and details without MetaMask or wallet permission.
